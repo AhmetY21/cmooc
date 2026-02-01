@@ -1,6 +1,7 @@
 import os
 import datetime
 import glob
+import json
 import google.generativeai as genai
 from slugify import slugify
 from dotenv import load_dotenv
@@ -10,16 +11,38 @@ load_dotenv()
 # Configuration
 API_KEY = os.environ.get("GEMINI_API_KEY")
 TOPIC_BASE_DIR = "topic/nlp"
+CURRICULUM_FILE = "curriculum.json"
 
-def get_existing_topics():
-    """Scans the directory for existing .md files and extracts topic names."""
-    topics = []
+def get_existing_topic_slugs():
+    """Scans the directory for existing .md files and returns their slugs."""
+    slugs = set()
     files = glob.glob(os.path.join(TOPIC_BASE_DIR, "**/*.md"), recursive=True)
     for f in files:
-        # Simple extraction: filename without .md (slugified)
-        topic_slug = os.path.basename(f).replace(".md", "")
-        topics.append(topic_slug)
-    return topics
+        # Filename without extension is the slug
+        slug = os.path.basename(f).replace(".md", "")
+        slugs.add(slug)
+    return slugs
+
+def get_next_topic():
+    """Reads curriculum.json and returns the first topic that hasn't been generated."""
+    if not os.path.exists(CURRICULUM_FILE):
+        print(f"Error: {CURRICULUM_FILE} not found.")
+        return None
+
+    with open(CURRICULUM_FILE, 'r') as f:
+        data = json.load(f)
+        curriculum_topics = data.get("topics", [])
+
+    existing_slugs = get_existing_topic_slugs()
+
+    for topic in curriculum_topics:
+        slug = slugify(topic)
+        if slug not in existing_slugs:
+            print(f"Next topic selected: {topic}")
+            return topic
+    
+    print("All topics in the curriculum have been covered!")
+    return None
 
 def get_lesson_info():
     now = datetime.datetime.now()
@@ -32,16 +55,15 @@ def get_lesson_info():
     return week_num, date_str, lesson_num, now
 
 def generate_content():
-    existing_topics = get_existing_topics()
-    topics_context = ", ".join(existing_topics) if existing_topics else "None yet"
-    
+    topic_name = get_next_topic()
+    if not topic_name:
+        return None
+
     prompt = f"""
-Teach me one topic from natural language processing. 
-IMPORTANT: Avoid these topics already covered: {topics_context}. 
-Pick a unique, interesting, or more advanced sub-topic each time.
+Teach me about the following topic in Natural Language Processing: "{topic_name}".
 
 Please strictly follow this format:
-Topic: <Topic Name>
+Topic: {topic_name}
 
 1- Provide formal definition, what is it and how can we use it?
 2- Provide an application scenario
@@ -54,21 +76,22 @@ Ensure the response is formatted in valid Markdown.
 
     if not API_KEY:
         print("WARNING: GEMINI_API_KEY not found. Using MOCK response for testing.")
-        return """Topic: Word Embeddings (Mock)
+        return f"""Topic: {topic_name} (Mock)
 
 1- Formal Definition:
-Word embeddings are vector representations of words...
+Mock definition for {topic_name}...
 
 2- Application Scenario:
-Used in recommendation systems...
+Mock scenario...
 
 3- Python Method:
 ```python
-import gensim
+# Mock code
+print("Hello NLP")
 ```
 
 4- Follow up:
-How does Word2Vec differ from GloVe?
+Mock question?
 
 5- Schedule:
 Standard notification...
@@ -82,7 +105,10 @@ Standard notification...
     return content
 
 def save_content(content, week_num, date_str, lesson_num):
-    # Extract topic for filename
+    if not content:
+        return None
+        
+    # Extract topic for filename (or verify it matches)
     lines = content.strip().split('\n')
     topic_line = next((line for line in lines if line.strip().startswith("Topic:")), "Topic: Unknown NLP Topic")
     topic_name = topic_line.replace("Topic:", "").strip()
@@ -110,9 +136,12 @@ if __name__ == "__main__":
     try:
         print("Starting content generation...")
         content = generate_content()
-        week, date_val, lesson, _ = get_lesson_info()
-        filepath = save_content(content, week, date_val, lesson)
-        print("Done.")
+        if content:
+            week, date_val, lesson, _ = get_lesson_info()
+            filepath = save_content(content, week, date_val, lesson)
+            print("Done.")
+        else:
+            print("No content generated (Curriculum finished or error).")
     except Exception as e:
         print(f"Error: {e}")
         exit(1)

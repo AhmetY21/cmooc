@@ -5,6 +5,7 @@ import json
 import google.generativeai as genai
 from slugify import slugify
 from dotenv import load_dotenv
+import markdown
 
 load_dotenv()
 
@@ -104,14 +105,53 @@ Standard notification...
     content = response.text
     return content
 
+def convert_md_to_html(content, title):
+    """Converts markdown content to a full HTML page."""
+    html_body = markdown.markdown(content, extensions=['fenced_code', 'codehilite'])
+    
+    html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max_width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }}
+        h1, h2, h3 {{ color: #2c3e50; }}
+        code {{ background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }}
+        pre {{ background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }}
+        blockquote {{ border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }}
+    </style>
+</head>
+<body>
+    {html_body}
+</body>
+</html>
+"""
+    return html_content
+
 def save_content(content, week_num, date_str, lesson_num):
     if not content:
         return None
         
-    # Extract topic for filename (or verify it matches)
+    # Extract topic for filename
     lines = content.strip().split('\n')
-    topic_line = next((line for line in lines if line.strip().startswith("Topic:")), "Topic: Unknown NLP Topic")
-    topic_name = topic_line.replace("Topic:", "").strip()
+    topic_line = next((line for line in lines if line.strip().startswith("Topic:")), None)
+    
+    if topic_line:
+        topic_name = topic_line.replace("Topic:", "").replace("(Mock)", "").strip()
+    else:
+        # Fallback if "Topic:" line is missing, use the curriculum topic if possible or generic
+         topic_name = "Unknown NLP Topic"
+
     slug = slugify(topic_name)
     
     # Construct path
@@ -123,14 +163,22 @@ def save_content(content, week_num, date_str, lesson_num):
     output_dir = os.path.join(TOPIC_BASE_DIR, week_dir, day_dir, lesson_dir)
     os.makedirs(output_dir, exist_ok=True)
     
-    filename = f"{slug}.md"
-    filepath = os.path.join(output_dir, filename)
-    
-    with open(filepath, "w") as f:
+    # Save Markdown
+    filename_md = f"{slug}.md"
+    filepath_md = os.path.join(output_dir, filename_md)
+    with open(filepath_md, "w") as f:
         f.write(content)
         
-    print(f"Generated: {filepath}")
-    return filepath
+    # Save HTML
+    filename_html = f"{slug}.html"
+    filepath_html = os.path.join(output_dir, filename_html)
+    html_content = convert_md_to_html(content, topic_name)
+    with open(filepath_html, "w") as f:
+        f.write(html_content)
+        
+    print(f"Generated Markdown: {filepath_md}")
+    print(f"Generated HTML: {filepath_html}")
+    return filepath_md
 
 if __name__ == "__main__":
     try:

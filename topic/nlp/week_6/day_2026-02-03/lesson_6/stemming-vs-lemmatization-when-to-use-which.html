@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stemming vs. Lemmatization: When to use which?</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: Stemming vs. Lemmatization: When to use which?</h2>
+<p>1- <strong>Provide formal definition, what is it and how can we use it?</strong></p>
+<ul>
+<li>
+<p><strong>Stemming:</strong> Stemming is a text normalization technique in Natural Language Processing (NLP) that reduces words to their root or stem form by chopping off affixes (prefixes and suffixes). The goal is to reduce inflectional forms and sometimes derivationally related forms of a word to a common base form. Stemming algorithms often use heuristic rules to remove endings, regardless of whether the resulting stem is a valid word.</p>
+<ul>
+<li><strong>How we use it:</strong> Stemming is used to improve the efficiency and accuracy of text retrieval and analysis by grouping words with similar meanings under a common root. This can simplify the analysis process and improve recall (the ability to find all relevant documents).</li>
+</ul>
+</li>
+<li>
+<p><strong>Lemmatization:</strong> Lemmatization, similar to stemming, aims to reduce words to their base or dictionary form, known as the lemma. However, unlike stemming, lemmatization considers the context of the word and uses vocabulary and morphological analysis to find the correct base form. The lemma is always a valid word.</p>
+<ul>
+<li><strong>How we use it:</strong> Lemmatization is used to reduce inflectional forms to a common base form in a more accurate and meaningful way than stemming. It is particularly useful when the context of the word is important, and the goal is to improve the precision of text retrieval and analysis (the ability to find only relevant documents).</li>
+</ul>
+</li>
+</ul>
+<p><strong>Key Differences:</strong></p>
+<p>| Feature         | Stemming                                      | Lemmatization                                 |
+|-----------------|-----------------------------------------------|----------------------------------------------|
+| Accuracy        | Lower                                         | Higher                                        |
+| Speed           | Faster                                        | Slower                                        |
+| Output          | May produce non-words                         | Always produces valid words                 |
+| Context Aware   | No                                            | Yes                                           |
+| Resource Intensive | Less                                         | More                                        |</p>
+<p>2- <strong>Provide an application scenario</strong></p>
+<ul>
+<li>
+<p><strong>Stemming Scenario:</strong> Imagine you are building a search engine for a website that sells books. You want users who search for "running" or "ran" or "runs" to also find books that mention "run." Using stemming, you can reduce all these words to the stem "run," ensuring that the search engine retrieves all relevant documents, even if they don't contain the exact search term.  The loss of semantic accuracy is less important than the broad search capability.</p>
+</li>
+<li>
+<p><strong>Lemmatization Scenario:</strong> Consider a sentiment analysis application designed to analyze customer reviews of a product. If a review contains the sentence "The product was amazing and the features are great," lemmatization will reduce "are" to "be" and "great" (assuming no adverb is used to change its sentiment) remains "great." This provides a better basis for determining the overall sentiment of the review because the base form captures the intended meaning of the words more accurately. A stemmer could reduce "amazing" to "amaz", losing its positive connotation (or at least reducing its identifiability).</p>
+</li>
+</ul>
+<p>3- <strong>Provide a method to apply in python (if possible)</strong></p>
+<p>python
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize</p>
+<h1>Download required resources (if you haven't already)</h1>
+<h1>nltk.download('punkt')</h1>
+<h1>nltk.download('wordnet')</h1>
+<p>text = "The cats are running quickly and eating happily. I ran yesterday."</p>
+<h1>Tokenize the text</h1>
+<p>tokens = word_tokenize(text)</p>
+<h1>Stemming using Porter Stemmer</h1>
+<p>porter = PorterStemmer()
+stemmed_words = [porter.stem(word) for word in tokens]
+print("Stemmed words:", stemmed_words)</p>
+<h1>Lemmatization using WordNet Lemmatizer</h1>
+<p>lemmatizer = WordNetLemmatizer()
+lemmatized_words = [lemmatizer.lemmatize(word) for word in tokens]
+print("Lemmatized words:", lemmatized_words)</p>
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong> <code>nltk</code> for NLP functionalities, <code>PorterStemmer</code> for stemming, <code>WordNetLemmatizer</code> for lemmatization, and <code>word_tokenize</code> for tokenizing the text.</li>
+<li><strong>Download required resources:</strong> The WordNet lemmatizer needs the 'punkt' (tokenizer) and 'wordnet' (lexical database) resources. You can download them using <code>nltk.download('punkt')</code> and <code>nltk.download('wordnet')</code>. These are one-time downloads.</li>
+<li><strong>Tokenize the text:</strong> The <code>word_tokenize</code> function splits the text into individual words (tokens).</li>
+<li><strong>Stemming:</strong> The <code>PorterStemmer</code> is initialized, and then each token is stemmed using the <code>stem()</code> method.</li>
+<li><strong>Lemmatization:</strong> The <code>WordNetLemmatizer</code> is initialized, and then each token is lemmatized using the <code>lemmatize()</code> method.</li>
+</ol>
+<p>4- <strong>Provide a follow up question about that topic</strong></p>
+<p>How do advanced stemming algorithms (e.g., Lancaster stemmer) and more sophisticated lemmatization techniques (e.g., incorporating part-of-speech tagging) further improve the accuracy and performance of NLP tasks, and what are the trade-offs involved in their implementation compared to simpler methods?</p>
+<p>5- <strong>Schedule a chatgpt chat to send notification (Simulated)</strong></p>
+<p><strong>Notification:</strong></p>
+<p>Subject: ChatGPT Chat Reminder: Stemming vs. Lemmatization Follow-up</p>
+<p>Body:</p>
+<p>Hi there,</p>
+<p>This is a reminder that a ChatGPT chat is scheduled to discuss the follow-up question regarding Stemming vs. Lemmatization:</p>
+<p>"How do advanced stemming algorithms (e.g., Lancaster stemmer) and more sophisticated lemmatization techniques (e.g., incorporating part-of-speech tagging) further improve the accuracy and performance of NLP tasks, and what are the trade-offs involved in their implementation compared to simpler methods?"</p>
+<p>Please be prepared to delve deeper into this topic. The AI assistant is ready to engage.</p>
+<p>Thank you.</p>
+</body>
+</html>

@@ -231,7 +231,7 @@ def update_index_page():
             <div class="lesson-name">{lesson["name"]}</div>
             <div class="lesson-links">
                 <a href="{lesson["html_path"]}" class="btn btn-primary">View Lesson (HTML)</a>
-                <a href="{lesson["md_path"]}" class="btn btn-secondary">Source (Markdown)</a>
+
             </div>
         </div>
         """

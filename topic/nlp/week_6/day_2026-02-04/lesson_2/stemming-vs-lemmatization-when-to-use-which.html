@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stemming vs. Lemmatization: When to use which?</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code { background-color: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #eee; margin: 0; padding-left: 15px; color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Topic: Stemming vs. Lemmatization: When to use which?</h2>
+<p><strong>1- Provide formal definition, what is it and how can we use it?</strong></p>
+<ul>
+<li>
+<p><strong>Stemming:</strong> Stemming is a text normalization technique that reduces words to their root form by chopping off the ends of the word, hoping to arrive at a common stem. The stem doesn't necessarily have to be a valid word. It's a crude heuristic process that cuts off prefixes or suffixes according to a set of rules.</p>
+<ul>
+<li><strong>What it is:</strong> A simplification method for text. It focuses on finding the <em>stem</em> of a word, which might not be a dictionary word.</li>
+<li><strong>How to use it:</strong> Used to reduce vocabulary size for indexing and retrieving documents. Useful when you only care about the general meaning or topic of the text and less about precise grammatical correctness. This can improve retrieval recall because variations of a word point to the same stem. Common stemming algorithms include Porter Stemmer, Lancaster Stemmer, and Snowball Stemmer.</li>
+</ul>
+</li>
+<li>
+<p><strong>Lemmatization:</strong> Lemmatization is a text normalization technique that aims to reduce words to their dictionary form, known as a lemma. This involves analyzing the word's morphology and vocabulary. Lemmatization usually requires a lexicon and morphological analysis to achieve the correct form. The resulting lemma is always a valid word.</p>
+<ul>
+<li><strong>What it is:</strong> A more sophisticated method than stemming. It aims to find the <em>lemma</em> of a word, which is the dictionary form or base form, and is always a valid word. It takes into account the context of the word.</li>
+<li><strong>How to use it:</strong> Used when the meaning of the word is important. Required for applications that require high accuracy or when you need to be able to interpret the normalized word. Good for tasks such as text summarization or question answering. Lemmatization often requires part-of-speech tagging (POS tagging) as it uses the POS tag to find the correct lemma.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Key Differences Summarized:</strong></p>
+<p>| Feature          | Stemming                               | Lemmatization                             |
+|------------------|----------------------------------------|------------------------------------------|
+| Result           | Stem (may not be a valid word)         | Lemma (always a valid word)               |
+| Complexity       | Simpler, faster                       | More complex, slower                     |
+| Context Awareness| No                                   | Yes                                      |
+| Accuracy         | Lower                                  | Higher                                   |
+| Resources        | Requires rule-based algorithms         | Requires lexicon, morphological analysis |</p>
+<p><strong>2- Provide an application scenario</strong></p>
+<ul>
+<li>
+<p><strong>Stemming Application Scenario:</strong> Imagine you are building a search engine for a large corpus of scientific documents. You want users to be able to find documents even if they search for "running," "ran," or "runs." Using stemming, all these words would be reduced to the "run" stem. This increases the chances of relevant documents being retrieved, even if the exact search term isn't present.  Stemming is effective when speed and recall are paramount, even at the cost of some accuracy.</p>
+</li>
+<li>
+<p><strong>Lemmatization Application Scenario:</strong> Consider a chatbot designed to answer customer queries about product features. If a user asks, "Are the products durable?", the chatbot needs to understand that "durable" is related to the lemma "durable."  Similarly, if a user asks "Which product is better?", the chatbot needs to know that "better" is the comparative form of "good".  Lemmatization provides the chatbot with the base form of words, enabling it to understand the meaning accurately and provide relevant responses. This is crucial where precision and understanding of the user's intent are vital.</p>
+</li>
+</ul>
+<p><strong>3- Provide a method to apply in python (if possible)</strong></p>
+<p>python
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize</p>
+<h1>Download necessary NLTK data (run once)</h1>
+<h1>nltk.download('punkt')</h1>
+<h1>nltk.download('wordnet')</h1>
+<h1>nltk.download('averaged_perceptron_tagger') # Required for POS tagging in lemmatization</h1>
+<h1>Sample sentence</h1>
+<p>sentence = "The cats were running quickly. They are running now and the dog loves to run."</p>
+<h1>Tokenization</h1>
+<p>words = word_tokenize(sentence)</p>
+<h1>Stemming (Porter Stemmer)</h1>
+<p>porter_stemmer = PorterStemmer()
+stemmed_words = [porter_stemmer.stem(word) for word in words]
+print("Stemmed words:", stemmed_words)</p>
+<h1>Lemmatization (WordNet Lemmatizer) - POS tagging required for accuracy</h1>
+<p>lemmatizer = WordNetLemmatizer()</p>
+<p>def pos_tag_word(word):
+    """Get the POS tag for a word to improve lemmatization accuracy."""
+    tag = nltk.pos_tag([word])[0][1].upper()  # e.g., 'NN' for noun
+    tag_dict = {"J": "a",  # adjective
+                "N": "n",  # noun
+                "V": "v",  # verb
+                "R": "r"}  # adverb</p>
+<pre class="codehilite"><code>return tag_dict.get(tag[0], 'n')  # default to noun if unknown
+</code></pre>
+
+<p>lemmatized_words = [lemmatizer.lemmatize(word, pos=pos_tag_word(word)) for word in words]
+print("Lemmatized words:", lemmatized_words)</p>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li>We use <code>nltk</code> (Natural Language Toolkit), a powerful Python library for NLP.</li>
+<li><strong>Stemming:</strong> We use the <code>PorterStemmer</code>. It's simple to use; you just create an instance and call the <code>stem()</code> method on each word.</li>
+<li><strong>Lemmatization:</strong> We use the <code>WordNetLemmatizer</code>. Lemmatization is more accurate when you provide the part-of-speech (POS) tag for each word. The <code>pos_tag_word()</code> function is used to determine the POS tag, which is then passed to the <code>lemmatize()</code> method.</li>
+</ul>
+<p><strong>4- Provide a follow up question about that topic</strong></p>
+<p>How does the choice between stemming and lemmatization impact the performance of a machine learning model for text classification, considering both accuracy and computational cost? Specifically, can you give examples of text classification tasks where stemming would be preferable to lemmatization, and vice-versa?</p>
+<p><strong>5- Schedule a chatgpt chat to send notification (Simulated)</strong></p>
+<p><strong>Notification:</strong></p>
+<p>Subject: Reminder: ChatGPT Chat Scheduled!</p>
+<p>Body:</p>
+<p>This is a simulated notification. A ChatGPT chat is scheduled to discuss "Stemming vs. Lemmatization: When to use which?" and related follow-up questions. The simulated chat will begin now. Please refer to the conversation history above for context. Good luck!</p>
+</body>
+</html>

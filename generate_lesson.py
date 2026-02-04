@@ -68,9 +68,9 @@ Topic: {topic_name}
 
 1- Provide formal definition, what is it and how can we use it?
 2- Provide an application scenario
-3- Provide a method to apply in python (if possible)
+3- Provide a method to apply in python 
 4- Provide a follow up question about that topic
-5- Schedule a chatgpt chat to send notification (Simulated)
+
 
 Ensure the response is formatted in valid Markdown.
 """

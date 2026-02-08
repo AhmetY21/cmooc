@@ -354,7 +354,8 @@ def save_content(content: str, topic_name: Optional[str], info: LessonInfo) -> O
 
     filename_html = f"{slug}.html"
     filepath_html = os.path.join(output_dir, filename_html)
-    html_content = convert_md_to_html(final_md, title)
+    # Pass raw_md instead of final_md so front matter doesn't show in HTML body
+    html_content = convert_md_to_html(raw_md, title)
     safe_write(filepath_html, html_content)
 
     print(f"Generated Markdown: {filepath_md}")
@@ -433,7 +434,6 @@ def update_index_page() -> None:
             <div class="lesson-name">{lesson["name"]}</div>
             <div class="lesson-links">
                 <a href="{lesson["html_path"]}" class="btn btn-primary">View Lesson (HTML)</a>
-                <a href="{lesson["md_path"]}" class="btn btn-secondary">Source (Markdown)</a>
             </div>
         </div>
         """

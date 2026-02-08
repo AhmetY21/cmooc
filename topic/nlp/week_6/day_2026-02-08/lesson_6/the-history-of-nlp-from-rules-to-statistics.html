@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The History of NLP: From Rules to Statistics</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-the-history-of-nlp-from-rules-to-statistics">Topic: The History of NLP: From Rules to Statistics</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The history of NLP: From Rules to Statistics describes the evolution of Natural Language Processing (NLP) techniques, broadly categorized into two major paradigms:</p>
+<ul>
+<li>
+<p><strong>Rule-Based NLP (Pre-1990s):</strong> This early approach relied on manually crafted linguistic rules to process text. These rules, typically based on grammar and vocabulary, were used for tasks like parsing, machine translation, and information extraction. Key components involved defining lexicons (dictionaries), morphological rules, syntactic rules (grammars), and semantic rules. These systems were deterministic and followed predefined pathways. The "knowledge" was explicitly programmed in.</p>
+</li>
+<li>
+<p><strong>Statistical NLP (1990s onwards):</strong> This approach leverages statistical models learned from large corpora (datasets of text and speech). Instead of manually defining rules, these models learn patterns and relationships from data. Common techniques include:</p>
+<ul>
+<li><strong>N-grams:</strong> Probabilistic models that predict the next word based on the preceding <em>n</em> words.</li>
+<li><strong>Hidden Markov Models (HMMs):</strong> Used for sequence labeling tasks like Part-of-Speech (POS) tagging and named entity recognition.</li>
+<li><strong>Probabilistic Context-Free Grammars (PCFGs):</strong> Statistical versions of CFGs that assign probabilities to production rules.</li>
+<li><strong>Machine Learning (ML) and Deep Learning (DL):</strong> Algorithms like Support Vector Machines (SVMs), Naive Bayes, and more recently, Recurrent Neural Networks (RNNs), LSTMs, Transformers, and large language models (LLMs) are used for a wide range of NLP tasks.</li>
+</ul>
+</li>
+</ul>
+<p><strong>How can we use this understanding?</strong></p>
+<ul>
+<li><strong>Choosing the right approach:</strong> Knowing the historical context helps you understand the strengths and weaknesses of different NLP techniques. Rule-based systems are useful when precision is crucial and the domain is well-defined, but they are brittle and difficult to scale. Statistical approaches are more robust and adaptable to new data but require large training datasets.</li>
+<li><strong>Debugging and improving NLP systems:</strong> Understanding the underlying principles of different approaches is crucial for identifying and resolving issues in NLP systems. If a rule-based system fails, you need to adjust the rules. If a statistical model performs poorly, you might need to improve the data, adjust the model architecture, or tune the hyperparameters.</li>
+<li><strong>Appreciating the progress of NLP:</strong> A historical perspective provides context for the current state of NLP and helps to appreciate the challenges overcome and the opportunities ahead. This can inspire further innovation and research.</li>
+<li><strong>Interpreting the output of different systems:</strong> Rule-based and statistical systems often produce different types of output. Knowing which type of system produced the output can help you better interpret its results.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Building a spam filter.</p>
+<ul>
+<li>
+<p><strong>Rule-Based Approach:</strong> We could create a set of rules based on keywords, phrases, and patterns commonly found in spam emails. For example:</p>
+<ul>
+<li>IF the email contains the word "Viagra" AND contains excessive exclamation marks, THEN classify as spam.</li>
+<li>IF the email's sender address is from a known spam domain, THEN classify as spam.</li>
+<li>IF the email body contains a high ratio of capitalized words, THEN classify as spam.</li>
+</ul>
+<p><strong>Pros:</strong> Easy to understand and implement initially. Provides high precision if the rules are carefully crafted.</p>
+<p><strong>Cons:</strong> Very brittle and easily bypassed by spammers who find new ways to avoid the rules. Requires constant updating and maintenance. Difficult to handle nuanced language and evolving spam techniques.</p>
+</li>
+<li>
+<p><strong>Statistical Approach (using Naive Bayes):</strong> We could train a Naive Bayes classifier on a dataset of labeled spam and ham (non-spam) emails. The classifier learns the probability of certain words and phrases appearing in spam emails versus ham emails.</p>
+<p><strong>Pros:</strong> More robust and adaptable to new spam techniques. Requires less manual effort in the long run. Can handle more nuanced language.</p>
+<p><strong>Cons:</strong> Requires a large labeled dataset. May occasionally misclassify legitimate emails as spam (false positives). Requires periodic retraining to stay up-to-date. Can be computationally expensive for very large datasets.</p>
+</li>
+</ul>
+<p>In a real-world spam filter, a combination of rule-based and statistical approaches is often used to maximize accuracy and robustness. The rule-based system handles obvious spam, while the statistical system handles more sophisticated and evolving spam techniques. The combination allows the strengths of both approaches to be leveraged.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a Python example demonstrating a simple statistical NLP technique: N-gram language modeling using the <code>nltk</code> library. We'll build a trigram (n=3) model to predict the next word given the previous two.</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import gutenberg
+from nltk.lm.preprocessing import padded_everygram_pipeline
+from nltk.lm import MLE
+
+# Load a text corpus (e.g., from Gutenberg)
+sentences = gutenberg.sents('austen-emma.txt')
+
+# Preprocess the data for N-gram modeling
+n = 3  # Trigram model
+train_data, padded_sents = padded_everygram_pipeline(n, sentences)
+
+# Train the N-gram model (Maximum Likelihood Estimation)
+model = MLE(n)
+model.fit(train_data, padded_sents)
+
+# Example prediction
+print(f&quot;Vocabulary size: {len(model.vocab)}&quot;)
+
+context = ['to', 'be']
+next_word = model.generate(1, context=context)
+print(f&quot;Given the context '{context}', the next predicted word is: {next_word}&quot;)
+
+# Function to generate a sentence
+def generate_sentence(model, num_words=10):
+    text = [None] * 2 # start with two None context words as per padded_everygram_pipeline
+    for i in range(num_words):
+        text.append(model.generate(1, context=text[-2:]))
+    return ' '.join([t for t in text[2:]]) # slice to remove None tokens
+
+print(&quot;Generated sentence:&quot;)
+print(generate_sentence(model, num_words=15))
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import Libraries:</strong> <code>nltk</code> is a powerful library for NLP tasks. <code>gutenberg</code> is a corpus reader providing access to various texts.  <code>padded_everygram_pipeline</code> helps prepare sentences for N-gram modeling by adding padding symbols (start and end tokens). <code>MLE</code> is a class for Maximum Likelihood Estimation for N-gram models.</li>
+<li><strong>Load Data:</strong> We load the text of "Emma" by Jane Austen from the Gutenberg corpus. <code>gutenberg.sents()</code> returns a list of sentences, each sentence being a list of words.</li>
+<li><strong>Preprocess Data:</strong> <code>padded_everygram_pipeline</code> prepares the data for N-gram modeling by:<ul>
+<li>Adding padding symbols (<code>&lt;s&gt;</code> and <code>&lt;/s&gt;</code>) to the beginning and end of each sentence. This helps the model learn probabilities for the first and last words of sentences.</li>
+<li>Generating N-grams from the sentences.</li>
+</ul>
+</li>
+<li><strong>Train Model:</strong> We create an <code>MLE</code> (Maximum Likelihood Estimation) model with <em>n</em> = 3 (trigram model). Then, we train the model using the preprocessed data.</li>
+<li><strong>Prediction:</strong> The <code>model.generate()</code> method predicts the next word given a context (the previous two words in this case).</li>
+<li><strong>Sentence Generation:</strong> A <code>generate_sentence</code> function is defined to generate text based on the probabilities learned by the model, using the context of the previous two words to generate each new word.</li>
+</ol>
+<p>This example showcases a simple statistical NLP technique for language modeling. Modern NLP methods, especially those leveraging deep learning, are far more complex, but this illustrates the shift from manually coded rules to data-driven models.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given the success of statistical NLP, particularly deep learning models, are rule-based systems completely obsolete? Are there still situations where they might be preferred or even necessary?</p>
+</body>
+</html>

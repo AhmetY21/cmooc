@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Standard NLP Pipeline Overview</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-the-standard-nlp-pipeline-overview">Topic: The Standard NLP Pipeline Overview</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Standard NLP Pipeline is a sequence of common preprocessing steps applied to raw text data before it can be effectively used for downstream NLP tasks like sentiment analysis, machine translation, or question answering. It's a modular approach, breaking down complex text processing into smaller, manageable stages. The core goal is to transform raw text into a clean, structured, and normalized format that NLP models can better understand and process.</p>
+<p>Common stages in the pipeline, though not always strictly adhered to in this order, include:</p>
+<ul>
+<li><strong>Text Acquisition:</strong> Obtaining the raw text data from various sources (e.g., web scraping, APIs, documents).</li>
+<li><strong>Tokenization:</strong> Breaking down the text into individual units called tokens (words, subwords, or punctuation).</li>
+<li><strong>Lowercasing:</strong> Converting all text to lowercase to ensure consistency and reduce vocabulary size.</li>
+<li><strong>Stop Word Removal:</strong> Eliminating common words like "the," "a," "is," etc., that often carry little semantic meaning.</li>
+<li><strong>Punctuation Removal:</strong> Removing punctuation marks like commas, periods, and question marks.</li>
+<li><strong>Stemming/Lemmatization:</strong> Reducing words to their root form (stemming is a simpler, heuristic approach; lemmatization considers the word's context and aims for the dictionary form).</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Identifying the grammatical role of each word (e.g., noun, verb, adjective).</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in the text (e.g., people, organizations, locations).</li>
+</ul>
+<p>We use the NLP pipeline to:</p>
+<ul>
+<li>Prepare text data for machine learning models.</li>
+<li>Improve the accuracy and performance of NLP tasks.</li>
+<li>Make text analysis more efficient.</li>
+<li>Standardize text processing across different applications.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you want to build a sentiment analysis model to analyze customer reviews of a product. The raw reviews often contain messy data:</p>
+<ul>
+<li>Mixed-case text (e.g., "This is GREAT!", "i LOVED it")</li>
+<li>Punctuation (e.g., "It's amazing!!!")</li>
+<li>Stop words (e.g., "This is a great product")</li>
+</ul>
+<p>Applying the NLP pipeline helps address these issues:</p>
+<ol>
+<li><strong>Tokenization:</strong> Separates the reviews into individual words.</li>
+<li><strong>Lowercasing:</strong> Converts all text to lowercase ("this is great").</li>
+<li><strong>Stop Word Removal:</strong> Removes words like "is," "a," leaving only "great," "product."</li>
+<li><strong>Punctuation Removal:</strong> Cleans punctuation (e.g., from "amazing!!!")</li>
+<li><strong>Stemming/Lemmatization:</strong> Reduces words like "loved" to "love" (lemmatization).</li>
+</ol>
+<p>The resulting processed text provides a cleaner input to the sentiment analysis model, leading to more accurate sentiment predictions. Without the pipeline, the model might struggle to generalize across different writing styles and word variations.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>nltk</code> and <code>spaCy</code> libraries in Python to implement the NLP pipeline. Here's an example using <code>nltk</code> for some basic steps:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+import string
+
+nltk.download('stopwords') # Run this once
+nltk.download('punkt')     # Run this once
+
+def basic_nlp_pipeline(text):
+  &quot;&quot;&quot;Performs basic NLP preprocessing steps on the input text.&quot;&quot;&quot;
+
+  # 1. Tokenization
+  tokens = word_tokenize(text)
+
+  # 2. Lowercasing
+  tokens = [token.lower() for token in tokens]
+
+  # 3. Punctuation Removal
+  table = str.maketrans('', '', string.punctuation)
+  stripped = [w.translate(table) for w in tokens]
+  words = [word for word in stripped if word.isalpha()] #removing empty strings
+
+  # 4. Stop Word Removal
+  stop_words = set(stopwords.words('english'))
+  tokens = [w for w in words if not w in stop_words]
+
+  # 5. Stemming
+  porter = PorterStemmer()
+  stemmed = [porter.stem(word) for word in tokens]
+
+  return stemmed
+
+# Example usage
+text = &quot;This is a great example! I loved it and would definitely recommend this product.&quot;
+processed_text = basic_nlp_pipeline(text)
+print(processed_text)
+
+# spaCy example for lemmatization and NER
+
+import spacy
+
+nlp = spacy.load(&quot;en_core_web_sm&quot;) # Download if needed: python -m spacy download en_core_web_sm
+
+def spacy_pipeline(text):
+  doc = nlp(text)
+  lemmatized_words = [token.lemma_ for token in doc]
+  entities = [(ent.text, ent.label_) for ent in doc.ents]
+  return lemmatized_words, entities
+
+text = &quot;Apple is looking at buying U.K. startup for $1 billion&quot;
+lemmas, entities = spacy_pipeline(text)
+
+print(&quot;Lemmas:&quot;, lemmas)
+print(&quot;Entities:&quot;, entities)
+</code></pre>
+
+<p>This example showcases tokenization, lowercasing, punctuation removal, stop word removal, and stemming using <code>nltk</code>.  It also demonstrates lemmatization and NER using <code>spaCy</code>, showing how easily more complex steps can be incorporated.  Note:  The quality of different models and algorithms within these libraries can vary, and choosing the correct combination is part of building an effective pipeline.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of stemming vs. lemmatization impact the performance of downstream NLP tasks like information retrieval or machine translation, and how do you decide which one to use for a specific application?</p>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Data Acquisition and Corpus Construction</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-text-data-acquisition-and-corpus-construction">Topic: Text Data Acquisition and Corpus Construction</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text data acquisition and corpus construction are the processes of gathering and organizing textual data for use in Natural Language Processing (NLP) tasks.</p>
+<ul>
+<li>
+<p><strong>Text Data Acquisition:</strong> This refers to the collection of raw text from various sources. The sources can be diverse, including web scraping, APIs, existing datasets, social media feeds, documents (PDFs, Word files), transcribed speech, and more. The choice of source depends heavily on the specific NLP task.</p>
+</li>
+<li>
+<p><strong>Corpus Construction:</strong> This involves processing and organizing the acquired raw text into a structured and usable format called a <em>corpus</em>. A corpus is essentially a collection of text documents, often annotated with metadata (e.g., author, date, topic) and linguistic information (e.g., part-of-speech tags, named entities). Corpus construction often includes cleaning and preprocessing the raw text to remove noise and irrelevant information, such as HTML tags, special characters, and excessive whitespace. It can also involve normalization steps like stemming, lemmatization, and lowercasing.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>A well-constructed corpus is fundamental for:</p>
+<ul>
+<li><strong>Training NLP models:</strong> Machine learning models require large amounts of data for training. The quality and representativeness of the corpus directly impact the performance of the model.</li>
+<li><strong>Evaluating NLP models:</strong> A test corpus is used to assess the accuracy and effectiveness of trained NLP models.</li>
+<li><strong>Linguistic research:</strong> Corpora are valuable resources for studying language patterns, trends, and changes.</li>
+<li><strong>Developing NLP applications:</strong> Many NLP applications, such as chatbots, text summarization tools, and machine translation systems, rely on corpora for their underlying knowledge.</li>
+<li><strong>Analyzing text data:</strong> Corpora enable various kinds of textual analysis, such as sentiment analysis, topic modeling, and text classification.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Building a sentiment analysis model for analyzing customer reviews of a particular product on an e-commerce website.</p>
+<p><strong>Text Data Acquisition:</strong></p>
+<ol>
+<li><strong>Web scraping:</strong> Use a web scraping tool to extract customer reviews and ratings from the product pages of the e-commerce website. The scraper would target specific HTML elements containing the review text and rating information.</li>
+<li><strong>API (if available):</strong> If the e-commerce website provides an API, use it to retrieve customer reviews. This is usually a more structured and reliable approach than web scraping.</li>
+</ol>
+<p><strong>Corpus Construction:</strong></p>
+<ol>
+<li><strong>Cleaning:</strong> Remove HTML tags, special characters, and any irrelevant content from the extracted review text.</li>
+<li><strong>Preprocessing:</strong><ul>
+<li>Lowercase the text.</li>
+<li>Remove punctuation.</li>
+<li>Tokenize the text into individual words (or phrases).</li>
+<li>Remove stop words (e.g., "the," "a," "is").</li>
+<li>Stem or lemmatize the words to reduce them to their root form.</li>
+</ul>
+</li>
+<li><strong>Annotation:</strong><ul>
+<li>Label each review with its sentiment (e.g., positive, negative, neutral) based on the rating provided. This can be done manually or automatically using rule-based or machine learning techniques.</li>
+</ul>
+</li>
+<li><strong>Structuring:</strong> Organize the cleaned, preprocessed, and annotated reviews into a structured format, such as a CSV file or a database table, with columns for review text, sentiment label, and other relevant metadata (e.g., reviewer ID, date).</li>
+</ol>
+<p>The resulting corpus can then be used to train a sentiment analysis model.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import requests
+from bs4 import BeautifulSoup
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import re
+import pandas as pd
+
+# Example: Web scraping (simplified) - requires 'requests' and 'beautifulsoup4'
+def scrape_reviews(url, css_selector_for_review_text):
+    try:
+        response = requests.get(url)
+        response.raise_for_status() # Raise HTTPError for bad responses (4XX, 5XX)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        review_elements = soup.select(css_selector_for_review_text)
+        reviews = [element.text.strip() for element in review_elements]
+        return reviews
+    except requests.exceptions.RequestException as e:
+        print(f&quot;Error during request: {e}&quot;)
+        return []
+    except Exception as e:
+        print(f&quot;Error during scraping: {e}&quot;)
+        return []
+
+
+# Example: Text Preprocessing using NLTK
+def preprocess_text(text):
+    text = text.lower()  # Lowercasing
+    text = re.sub(r'[^\w\s]', '', text) # Removing punctuation
+
+    tokens = nltk.word_tokenize(text) # Tokenization
+
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token not in stop_words]  # Removing Stopwords
+
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token) for token in tokens]  # Lemmatization
+
+    return &quot; &quot;.join(tokens)
+
+
+# Example usage:
+# 1. Acquire Data (replace with your actual URL and CSS selector)
+url = &quot;https://www.example.com/product/reviews&quot; # Replace with a real URL
+css_selector = &quot;.review-text&quot; # Replace with correct CSS selector
+raw_reviews = scrape_reviews(url, css_selector)
+
+# Create a dataframe for the corpus
+corpus_data = []
+
+# 2. Preprocess and structure the data
+if raw_reviews:
+    for review in raw_reviews:
+        preprocessed_review = preprocess_text(review)
+        corpus_data.append({&quot;review_text&quot;: review, &quot;preprocessed_text&quot;: preprocessed_review, &quot;sentiment&quot;: None})  # Sentiment will be labeled later
+
+    corpus_df = pd.DataFrame(corpus_data) # Create a pandas DataFrame
+    print(corpus_df.head())
+else:
+    print(&quot;No reviews were acquired.&quot;)
+
+#  Save corpus to CSV for later use
+# corpus_df.to_csv(&quot;customer_reviews_corpus.csv&quot;, index=False) # optional: save to CSV
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong><code>scrape_reviews(url, css_selector)</code>:</strong>  This function uses the <code>requests</code> library to fetch the HTML content of a webpage and <code>BeautifulSoup</code> to parse it. It then uses a CSS selector to identify the elements containing review text and extracts the text from these elements.  Error handling is included to catch network issues or errors during parsing. <em>Important:</em> This is a simplified example. Real-world web scraping can be more complex and require handling pagination, dynamic content, and anti-scraping measures. You also must comply with the website's terms of service and robots.txt file.</li>
+<li><strong><code>preprocess_text(text)</code>:</strong> This function uses the <code>nltk</code> library to perform several text preprocessing steps:<ul>
+<li>Lowercases the text.</li>
+<li>Removes punctuation using regular expressions.</li>
+<li>Tokenizes the text into individual words.</li>
+<li>Removes stop words (common words like "the," "a," "is").</li>
+<li>Lemmatizes the words to reduce them to their root form (e.g., "running" becomes "run").</li>
+</ul>
+</li>
+<li><strong>Example Usage:</strong> Demonstrates how to call the <code>scrape_reviews</code> and <code>preprocess_text</code> functions to create a basic corpus.  It initializes <code>sentiment</code> to <code>None</code> because sentiment labelling must be done after this point. It also puts the result into a Pandas dataframe for easier storage, analysis, and training. Finally it saves the corpus to a CSV file.</li>
+</ul>
+<p><strong>Note:</strong> The <code>nltk</code> library requires installation (<code>pip install nltk</code>). You may also need to download the necessary NLTK data (e.g., stopwords, wordnet) using <code>nltk.download('stopwords')</code>, <code>nltk.download('punkt')</code>, and <code>nltk.download('wordnet')</code>. Also <code>beautifulsoup4</code>, <code>requests</code> and <code>pandas</code> will have to be installed.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can active learning be incorporated into the corpus construction process to improve the efficiency of annotation, especially for large datasets where manual labeling of all instances is impractical? Consider specifically how to choose which instances to label next.</p>
+</body>
+</html>

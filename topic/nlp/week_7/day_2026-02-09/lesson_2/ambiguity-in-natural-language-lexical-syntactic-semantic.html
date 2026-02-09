@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ambiguity in Natural Language: Lexical, Syntactic, Semantic</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-ambiguity-in-natural-language-lexical-syntactic-semantic">Topic: Ambiguity in Natural Language: Lexical, Syntactic, Semantic</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Ambiguity in natural language refers to the property where a word, phrase, or sentence can have more than one meaning or interpretation. This inherent characteristic of human language poses a significant challenge for NLP systems, as these systems must be able to correctly discern the intended meaning in a given context. There are three primary types of ambiguity: lexical, syntactic, and semantic.</p>
+<ul>
+<li>
+<p><strong>Lexical Ambiguity:</strong> Occurs when a single word has multiple meanings. This is also known as "word sense ambiguity." For example, the word "bank" can refer to a financial institution or the edge of a river.</p>
+</li>
+<li>
+<p><strong>Syntactic Ambiguity:</strong> Arises when a sentence has multiple possible grammatical structures, leading to different interpretations.  This is also called "structural ambiguity." For example, "I saw the man with the telescope."  Did I use the telescope to see him, or did he possess the telescope?</p>
+</li>
+<li>
+<p><strong>Semantic Ambiguity:</strong> This involves ambiguity at the level of meaning, often involving the relationships between words and phrases in a sentence, even when the syntactic structure is clear.  This can arise from vagueness or unresolved references.  For example, "The pen is mightier than the sword." Is this literally about pens and swords, or is it a metaphorical statement about the power of communication over violence?</p>
+</li>
+</ul>
+<p>We can use the understanding of ambiguity to:</p>
+<ul>
+<li><strong>Improve parsing accuracy:</strong> By incorporating disambiguation techniques into parsers, we can choose the correct syntactic structure for ambiguous sentences.</li>
+<li><strong>Enhance machine translation:</strong> Correctly resolving ambiguity is crucial for accurately translating text from one language to another.</li>
+<li><strong>Build better information retrieval systems:</strong>  By understanding the multiple meanings of search queries, we can provide more relevant search results.</li>
+<li><strong>Develop more robust chatbot applications:</strong>  Chatbots need to understand the intent of the user, even when their input is ambiguous.</li>
+<li><strong>Evaluate NLP model performance:</strong> The ability of an NLP model to resolve ambiguity is a key measure of its overall performance and understanding of language.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a customer service chatbot. A user types the query: "I want to book a flight to see my relatives."</p>
+<ul>
+<li><strong>Lexical Ambiguity:</strong> The word "book" can mean either to reserve something (a flight) or a physical book.</li>
+<li><strong>Syntactic Ambiguity:</strong> While less prominent here, one could technically parse "to see my relatives" as either the <em>reason</em> for the flight or a description of the destination. For example "I want to book a flight to a place like [see my relatives] Florida."</li>
+<li><strong>Semantic Ambiguity:</strong> The phrase "relatives" is ambiguous. Who are these relatives? Where do they live? The chatbot needs to understand the <em>intent</em> to book a flight and then prompt the user to specify the destination and dates to resolve the semantic and underlying pragmatic ambiguity.</li>
+</ul>
+<p>Without addressing the ambiguity, the chatbot might misinterpret the user's request (e.g., try to sell them a book instead of a flight) or fail to gather enough information to book a suitable flight. A good chatbot would need to employ disambiguation techniques to understand the user's intent accurately and provide relevant assistance.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While there isn't a single Python function that magically <em>solves</em> ambiguity, several NLP libraries offer tools that can help <em>mitigate</em> its effects. One common approach involves using Word Sense Disambiguation (WSD) techniques.  Here's an example using NLTK and WordNet, demonstrating a simplified Lesk algorithm for Lexical Ambiguity:</p>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.corpus import wordnet as wn
+from nltk.tokenize import word_tokenize
+
+def simplified_lesk(word, sentence):
+    &quot;&quot;&quot;
+    Simplified Lesk algorithm for word sense disambiguation.
+    &quot;&quot;&quot;
+    best_sense = None
+    max_overlap = 0
+    sentence_context = set(word_tokenize(sentence))
+
+    for synset in wn.synsets(word):
+        synset_context = set(word_tokenize(synset.definition()))
+        overlap = len(sentence_context.intersection(synset_context))
+
+        for example in synset.examples():
+            synset_context.update(word_tokenize(example))
+
+        overlap = len(sentence_context.intersection(synset_context))
+
+        if overlap &gt; max_overlap:
+            max_overlap = overlap
+            best_sense = synset
+
+    return best_sense
+
+# Example usage
+sentence = &quot;I went to the bank to deposit money.&quot;
+ambiguous_word = &quot;bank&quot;
+
+sense = simplified_lesk(ambiguous_word, sentence)
+
+if sense:
+    print(f&quot;The sense of '{ambiguous_word}' in the sentence is: {sense.definition()}&quot;)
+else:
+    print(f&quot;Could not disambiguate '{ambiguous_word}'.&quot;)
+
+# another Example
+sentence = &quot;I went to the bank of the river to relax.&quot;
+ambiguous_word = &quot;bank&quot;
+
+sense = simplified_lesk(ambiguous_word, sentence)
+
+if sense:
+    print(f&quot;The sense of '{ambiguous_word}' in the sentence is: {sense.definition()}&quot;)
+else:
+    print(f&quot;Could not disambiguate '{ambiguous_word}'.&quot;)
+
+
+nltk.download('punkt') # first time only.
+nltk.download('wordnet') # first time only.
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>simplified_lesk(word, sentence)</code>:</strong> This function takes the ambiguous word and the sentence as input.</li>
+<li><strong><code>wn.synsets(word)</code>:</strong>  It retrieves all possible synsets (sets of synonyms representing distinct concepts) for the given word from WordNet.</li>
+<li><strong>Context Overlap:</strong> It calculates the overlap between the context of each synset (definition and examples) and the context of the sentence. This is a simplified version, as more sophisticated methods would consider part-of-speech tagging, stemming, and other factors.</li>
+<li><strong>Best Sense Selection:</strong> The synset with the highest overlap is chosen as the most likely sense of the word in the given sentence.</li>
+<li><strong>Prints results:</strong> If a suitable synset can be determined it prints out the corresponding definition.</li>
+</ol>
+<p><strong>Important Notes:</strong></p>
+<ul>
+<li>This is a <em>simplified</em> Lesk algorithm. Real-world WSD systems are significantly more complex and often rely on machine learning models trained on large corpora.</li>
+<li>NLTK requires downloading resources the first time you use it. The included code downloads <code>punkt</code> for tokenization, and <code>wordnet</code> for word sense information.</li>
+<li>More sophisticated approaches to disambiguation might use pre-trained language models like BERT or transformer networks to capture contextual information more effectively.  These models can be fine-tuned for specific WSD tasks.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can deep learning models, such as transformer networks, be used to address syntactic and semantic ambiguity more effectively than traditional rule-based or statistical methods? What are the limitations of using deep learning for ambiguity resolution?</p>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Named Entity Recognition (NER) Fundamentals</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-named-entity-recognition-ner-fundamentals">Topic: Named Entity Recognition (NER) Fundamentals</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Named Entity Recognition (NER), also known as entity identification, entity chunking, and entity extraction, is a subtask of information extraction that seeks to locate and classify named entities mentioned in unstructured text into pre-defined categories such as person names, organizations, locations, times, quantities, monetary values, percentages, etc.</p>
+<p>Formally, given a text sequence <em>T</em> = (w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>n</sub>), NER aims to identify contiguous spans of words (chunks) that represent named entities and assign a specific category <em>c</em> from a predefined set of entity types <em>C</em> to each identified entity.  The output is a set of (start_index, end_index, entity_type) tuples, where start_index and end_index define the span of the entity within the text, and entity_type is the assigned category.</p>
+<p>We can use NER for several purposes:</p>
+<ul>
+<li><strong>Information Retrieval:</strong> Improve search relevance by identifying specific entities of interest within documents.</li>
+<li><strong>Question Answering:</strong> Extract key entities from a question to better understand the user's intent and formulate a more precise query against a knowledge base.</li>
+<li><strong>Knowledge Base Construction:</strong> Automatically populate knowledge bases with entities and their relationships extracted from text.</li>
+<li><strong>Customer Service:</strong> Identify customer needs and issues by extracting entities related to products, services, and complaints from customer interactions.</li>
+<li><strong>Content Recommendation:</strong> Suggest relevant content based on the entities discussed in a document or user's reading history.</li>
+<li><strong>Fraud Detection:</strong> Identifying suspicious patterns and relationships between entities involved in fraudulent activities.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine a news article:</p>
+<p>"Apple Inc. announced a new iPhone 15 at an event in Cupertino, California. CEO Tim Cook highlighted the phone's advanced features. The price will start at $799."</p>
+<p>Applying NER to this text would identify the following entities:</p>
+<ul>
+<li>"Apple Inc." - ORGANIZATION</li>
+<li>"iPhone 15" - PRODUCT</li>
+<li>"Cupertino, California" - GPE (Geopolitical Entity - a location)</li>
+<li>"Tim Cook" - PERSON</li>
+<li>"$799" - MONEY</li>
+</ul>
+<p>This information can then be used to understand the article's subject (Apple's new iPhone), where the event took place, who announced it, and its price. This allows for easier indexing, searching, and summarization of the news article.  A news aggregator could categorize this article as "Technology" or "Business" based on the identified entities.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>spaCy</code> library for NER in Python. Here's a basic example:</p>
+<pre class="codehilite"><code class="language-python">import spacy
+
+# Load the English language model (you might need to download it first: python -m spacy download en_core_web_sm)
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+text = &quot;Apple Inc. announced a new iPhone 15 at an event in Cupertino, California. CEO Tim Cook highlighted the phone's advanced features. The price will start at $799.&quot;
+
+# Process the text with spaCy
+doc = nlp(text)
+
+# Iterate over the entities and print them
+for ent in doc.ents:
+    print(ent.text, ent.label_)
+
+#Alternatively, to get the start and end character indices:
+for ent in doc.ents:
+    print(ent.text, ent.label_, ent.start_char, ent.end_char)
+</code></pre>
+
+<p>This code will output:</p>
+<pre class="codehilite"><code>Apple Inc. ORG
+iPhone 15 PRODUCT
+Cupertino GPE
+California GPE
+Tim Cook PERSON
+$799 MONEY
+</code></pre>
+
+<p>The <code>spacy.load("en_core_web_sm")</code> line loads a small English language model.  Larger models (e.g., "en_core_web_lg", "en_core_web_trf") generally provide more accurate NER performance, but require more computational resources.  You can download different models using <code>python -m spacy download en_core_web_lg</code> (or the desired model name).  The <code>doc.ents</code> attribute contains a list of <code>Span</code> objects, each representing a recognized entity. Each <code>Span</code> object has attributes like <code>text</code> (the entity text) and <code>label_</code> (the entity type).  The <code>start_char</code> and <code>end_char</code> attributes give the character indices of the entity within the original text.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some common challenges and errors encountered in NER, and what techniques can be used to mitigate them? For example, how can we address issues like ambiguity in entity types (e.g., "Amazon" as a company vs. a river), or handling nested entities? How does the performance of NER systems vary across different languages and domains?</p>
+</body>
+</html>

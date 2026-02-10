@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POS Tagging Algorithms (HMM, Viterbi)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-pos-tagging-algorithms-hmm-viterbi">Topic: POS Tagging Algorithms (HMM, Viterbi)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Part-of-Speech (POS) tagging</strong> is the process of assigning a grammatical tag to each word in a sentence. These tags represent the word's role in the sentence, such as noun, verb, adjective, adverb, etc. POS tagging is a crucial step in many NLP tasks, including parsing, information extraction, machine translation, and question answering.</p>
+<p>The <strong>Hidden Markov Model (HMM)</strong> is a probabilistic sequence model used to predict a sequence of hidden states (POS tags) based on a sequence of observed outputs (words). It makes two key assumptions:</p>
+<ul>
+<li><strong>Markov Assumption:</strong> The probability of a particular state depends only on the previous state.  In the context of POS tagging, this means the tag of a word depends only on the tag of the previous word.</li>
+<li><strong>Observation Independence:</strong> The probability of an observation (word) depends only on the current state (tag) that produced it.</li>
+</ul>
+<p>The HMM is defined by the following parameters:</p>
+<ul>
+<li><strong>States (S):</strong> The set of possible POS tags (e.g., noun, verb, adjective).</li>
+<li><strong>Observations (O):</strong> The set of possible words in the vocabulary.</li>
+<li><strong>Transition Probabilities (A):</strong>  <code>P(state_t | state_t-1)</code>, the probability of transitioning from one tag to another.  For example, <code>P(verb | noun)</code> is the probability of a verb following a noun.</li>
+<li><strong>Emission Probabilities (B):</strong> <code>P(observation_t | state_t)</code>, the probability of a word being generated given a particular tag. For example, <code>P("run" | verb)</code> is the probability of the word "run" being a verb.</li>
+<li><strong>Initial Probabilities (π):</strong> <code>P(state_1)</code>, the probability of starting with a particular tag.</li>
+</ul>
+<p>The <strong>Viterbi algorithm</strong> is a dynamic programming algorithm used to find the most likely sequence of hidden states (POS tags) given a sequence of observed outputs (words) and an HMM.  It efficiently calculates the probability of the most likely path through the HMM state space for a given sentence. The algorithm works by maintaining a table (Viterbi trellis) that stores the probability of the most likely path ending in each possible state at each time step (word position). It then traces back through the trellis to find the sequence of states that maximizes the overall probability.</p>
+<p>In summary, we use an HMM to model the relationship between words and their tags and the Viterbi algorithm to efficiently find the optimal sequence of tags for a given sentence based on the HMM.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the sentence: "The dog chased the cat."</p>
+<p>We want to assign POS tags to each word:</p>
+<ul>
+<li>"The": Determiner (DT)</li>
+<li>"dog": Noun (NN)</li>
+<li>"chased": Verb (VBD)</li>
+<li>"the": Determiner (DT)</li>
+<li>"cat": Noun (NN)</li>
+</ul>
+<p>An HMM, trained on a large corpus of tagged text, would have learned the transition and emission probabilities necessary to perform this tagging. For example, it might have learned that:</p>
+<ul>
+<li>P(NN | DT) is high (a noun is likely to follow a determiner).</li>
+<li>P("dog" | NN) is high (the word "dog" is likely to be a noun).</li>
+<li>P(DT | VBD) is low (a determiner is unlikely to follow a verb).</li>
+</ul>
+<p>The Viterbi algorithm would then use these probabilities to find the most likely sequence of tags (DT NN VBD DT NN) for the sentence.  If, without context, "chased" could also be a noun (unlikely but possible), the Viterbi algorithm would weigh the probabilities of different tag sequences (e.g., DT NN NN DT NN) and choose the one with the highest overall probability based on the HMM parameters.</p>
+<p>Another application scenario includes automatically generating subtitles for videos, where accurate POS tagging is crucial for later stages of speech processing such as named entity recognition, which helps identify keywords and build better indices.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a simple example using the <code>hmmlearn</code> library to demonstrate the Viterbi algorithm with a pre-trained HMM.  Note that training the HMM on real data requires a substantial tagged corpus and is beyond the scope of this basic illustration.  Also, for real-world usage, consider more advanced and pre-trained models from libraries like <code>spaCy</code> or <code>NLTK</code>.</p>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from hmmlearn import hmm
+
+# Simplified example with 3 states (Noun, Verb, Determiner) and a small vocabulary
+states = [&quot;Noun&quot;, &quot;Verb&quot;, &quot;Determiner&quot;]
+n_states = len(states)
+observations = [&quot;dog&quot;, &quot;chased&quot;, &quot;the&quot;, &quot;cat&quot;, &quot;run&quot;]
+n_observations = len(observations)
+
+# Example HMM parameters (replace with trained parameters)
+start_probability = np.array([0.3, 0.1, 0.6]) # Initial probabilities
+transition_probability = np.array([
+    [0.4, 0.4, 0.2],  # Noun -&gt; Noun, Verb, Determiner
+    [0.6, 0.1, 0.3],  # Verb -&gt; Noun, Verb, Determiner
+    [0.5, 0.0, 0.5]   # Determiner -&gt; Noun, Verb, Determiner
+])
+emission_probability = np.array([
+    [0.4, 0.0, 0.0, 0.6, 0.0],  # Noun -&gt; dog, chased, the, cat, run
+    [0.0, 0.8, 0.0, 0.0, 0.2],  # Verb -&gt; dog, chased, the, cat, run
+    [0.0, 0.0, 1.0, 0.0, 0.0]   # Determiner -&gt; dog, chased, the, cat, run
+])
+
+# Create the HMM model
+model = hmm.CategoricalHMM(n_components=n_states, random_state=42)
+model.startprob_ = start_probability
+model.transmat_ = transition_probability
+model.emissionprob_ = emission_probability
+
+
+def viterbi(model, observations_sequence, states):
+    &quot;&quot;&quot;Simple Viterbi implementation for demonstration.&quot;&quot;&quot;
+    logprob, sequence = model.decode(observations_sequence, lengths=[len(observations_sequence)])
+    return [states[i] for i in sequence]
+
+
+# Example sentence
+sentence = [&quot;the&quot;, &quot;dog&quot;, &quot;chased&quot;, &quot;the&quot;, &quot;cat&quot;]
+# Map words to observation indices
+observations_indices = [observations.index(word) for word in sentence]
+
+# Run Viterbi algorithm
+predicted_tags = viterbi(model, observations_indices, states)
+print(f&quot;Sentence: {sentence}&quot;)
+print(f&quot;Predicted Tags: {predicted_tags}&quot;)
+
+#Alternative: Using nltk
+import nltk
+from nltk.tag import hmm
+
+# Sample training data (replace with a larger corpus)
+training_data = [
+    [(&quot;the&quot;, &quot;DT&quot;), (&quot;dog&quot;, &quot;NN&quot;), (&quot;barked&quot;, &quot;VB&quot;)],
+    [(&quot;the&quot;, &quot;cat&quot;, &quot;DT&quot;), (&quot;slept&quot;, &quot;VB&quot;)],
+]
+
+# Train the HMM tagger
+trainer = hmm.HiddenMarkovModelTrainer(states=states, symbols=observations) # states and symbols as defined above
+trained_tagger = trainer.train(training_data)
+
+# Example sentence
+sentence = [&quot;the&quot;, &quot;cat&quot;, &quot;slept&quot;]
+
+# Tag the sentence using the trained tagger
+tagged_sentence = trained_tagger.tag(sentence)
+print(f&quot;Sentence: {sentence}&quot;)
+print(f&quot;Predicted Tags: {tagged_sentence}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>HMM Parameters:</strong> We define the states (POS tags), observations (words), and the HMM parameters (initial, transition, and emission probabilities).  These are <em>crucially</em> derived from training on a large, tagged corpus.</li>
+<li><strong><code>hmmlearn</code>:</strong> The <code>hmmlearn</code> library provides tools for working with HMMs. We create a <code>CategoricalHMM</code> model.</li>
+<li><strong>Observation Indices:</strong>  The Viterbi algorithm expects numerical input (indices of observations).  We map the words in the sentence to their corresponding indices in the <code>observations</code> list.</li>
+<li><strong><code>model.decode</code>:</strong> The <code>model.decode()</code> function applies the Viterbi algorithm, leveraging pre-trained parameters, and returns the log probability of the most likely sequence as well as that sequence.</li>
+<li><strong>Result:</strong> The code prints the original sentence and the predicted POS tags.</li>
+</ol>
+<p>The NLTK example is closer to real-world use since it involves actually training a tagger on a limited set of training data. Replace with a larger training dataset to generate a more meaningful result.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we handle unseen words (words not present in the training data) when using an HMM for POS tagging?  What are some common techniques to address the problem of <em>Out-Of-Vocabulary</em> (OOV) words?</p>
+</body>
+</html>

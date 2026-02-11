@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Text Cleaning (Handling Emojis, URLs)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-advanced-text-cleaning-handling-emojis-urls">Topic: Advanced Text Cleaning (Handling Emojis, URLs)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Advanced text cleaning refers to the process of transforming raw text data into a more usable and consistent format for NLP tasks by addressing complex cleaning needs beyond basic punctuation removal and lowercasing. Handling emojis and URLs falls under this umbrella.</p>
+<ul>
+<li>
+<p><strong>Handling Emojis:</strong> This involves either removing emojis entirely or replacing them with textual descriptions (e.g., ":smile:" for 😊). This is important because emojis can introduce noise into NLP models if not treated appropriately, as they often lack semantic meaning relevant to the core textual content. They also can be inconsistent across different platforms and operating systems. Decisions on whether to remove or translate them depend on the specific application. For sentiment analysis, the emoji itself might be relevant. For topic modeling on general text, it might be removed.</p>
+</li>
+<li>
+<p><strong>Handling URLs:</strong> URLs, particularly in social media data, are often extraneous information. Cleaning them involves either removing them completely or replacing them with a placeholder token (e.g., "<URL>"). Removing URLs simplifies text and focuses the NLP model on the actual text content. In some cases, URL domains might be extracted to provide context (e.g., identifying that a tweet refers to a news article from 'nytimes.com').</p>
+</li>
+</ul>
+<p>The use of advanced cleaning techniques allows for more accurate and reliable NLP results. A cleaner dataset results in improved model performance, reduced noise, and better generalization.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the following application scenario: <strong>Sentiment Analysis of Twitter data about a new product release.</strong></p>
+<p>Twitter data is notorious for containing emojis, URLs, and other noise. If we want to accurately gauge public sentiment towards our new product, we need to carefully handle these elements:</p>
+<ul>
+<li><strong>Emojis:</strong>  Emojis can directly express sentiment (e.g., 👍, 👎, ❤️) or be used ironically. Ignoring them would lead to inaccurate sentiment scores.</li>
+<li><strong>URLs:</strong> Tweets often contain links to product pages, news articles, or other relevant resources. While the link itself might not contain sentiment, the <em>presence</em> of a link could indicate higher engagement or interest. Removing the URL and potentially extracting the domain might provide valuable feature information.</li>
+<li><strong>Overall:</strong> Cleaning the text before feeding it into a sentiment analysis model will reduce noise from irrelevant characters and text patterns, leading to a more reliable and accurate assessment of public opinion.</li>
+</ul>
+<p>In this scenario, we might choose to replace emojis with textual descriptions relevant to their meaning, remove URLs, and potentially add a binary feature indicating the presence of a URL.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import re
+import emoji
+
+def clean_text(text):
+    &quot;&quot;&quot;
+    Cleans text by removing URLs and handling emojis.
+
+    Args:
+      text: The input text string.
+
+    Returns:
+      A cleaned text string.
+    &quot;&quot;&quot;
+
+    # Remove URLs
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+
+    # Convert emojis to text descriptions (can also choose to remove them)
+    text = emoji.demojize(text, delimiters=(&quot;&quot;, &quot;&quot;)) # Remove the colons as well
+
+    # If you wanted to *remove* emojis entirely:
+    # text = ''.join(c for c in text if c not in emoji.UNICODE_EMOJI['en'])
+
+    # Clean up whitespace (remove extra spaces)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text
+
+# Example usage
+text = &quot;Check out our new product! 🎉 https://example.com It's amazing! 😊&quot;
+cleaned_text = clean_text(text)
+print(f&quot;Original Text: {text}&quot;)
+print(f&quot;Cleaned Text: {cleaned_text}&quot;)
+
+text2 = &quot;I hate the product, it's awful 😡&quot;
+cleaned_text2 = clean_text(text2)
+print(f&quot;Original Text: {text2}&quot;)
+print(f&quot;Cleaned Text: {cleaned_text2}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Besides emojis and URLs, what are other common elements that should be considered during advanced text cleaning, and how might you handle them? Think about specific types of noisy data found in real-world text datasets.</p>
+</body>
+</html>

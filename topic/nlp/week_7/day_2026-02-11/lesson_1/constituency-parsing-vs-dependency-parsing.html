@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constituency Parsing vs Dependency Parsing</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-constituency-parsing-vs-dependency-parsing">Topic: Constituency Parsing vs Dependency Parsing</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Both constituency parsing and dependency parsing are syntactic parsing techniques used in Natural Language Processing (NLP) to analyze the grammatical structure of a sentence. They aim to represent how words in a sentence relate to each other, but they do so in different ways.</p>
+<p><strong>Constituency Parsing (Phrase Structure Parsing):</strong></p>
+<ul>
+<li>
+<p><strong>Definition:</strong> Constituency parsing decomposes a sentence into its constituent parts (phrases or chunks), building a tree structure based on formal grammar rules. These rules define how words group together to form phrases, which in turn group together to form larger phrases, ultimately forming the entire sentence. The resulting tree is a <strong>constituency tree</strong> or <strong>phrase structure tree</strong>. Nodes in the tree represent constituents (e.g., noun phrase (NP), verb phrase (VP), prepositional phrase (PP), etc.), and the leaves represent the individual words.  Constituency parsing emphasizes hierarchical structure and grammatical relations based on these predefined phrase types.</p>
+</li>
+<li>
+<p><strong>Usage:</strong> Constituency parsing is used to understand the syntactic structure of a sentence, identify phrases and their types, and build representations for semantic analysis, machine translation, and grammatical error detection.  It is particularly useful when the grammatical correctness and well-formedness of sentences are important. For example, it can help determine if a verb is in the correct tense or if a noun phrase has the correct determiner.</p>
+</li>
+</ul>
+<p><strong>Dependency Parsing:</strong></p>
+<ul>
+<li>
+<p><strong>Definition:</strong> Dependency parsing focuses on the relationships between individual words in a sentence. It represents the syntactic structure as a graph (usually a tree) where words are nodes, and the edges represent dependencies between words. Each edge is labeled with a grammatical relation, indicating the type of dependency (e.g., subject, object, modifier). The root of the tree is typically the main verb of the sentence. Dependency parsing represents the relationships between words directly, rather than through intermediate phrases.</p>
+</li>
+<li>
+<p><strong>Usage:</strong> Dependency parsing is useful for tasks that require understanding the semantic relationships between words, such as information extraction, question answering, and text summarization. It is particularly effective at identifying arguments of verbs and modifiers of nouns. It can also be used in machine translation and relation extraction. For example, in information extraction, we might want to know which noun is the subject of a verb, or which adjective modifies a given noun. Dependency parsing makes these relationships explicit.</p>
+</li>
+</ul>
+<p>In essence, constituency parsing tells us "what <em>kinds</em> of phrases exist in a sentence and how they are nested," while dependency parsing tells us "which words <em>depend</em> on other words and how."</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Constituency Parsing Application: Grammar Checking and Text Generation</strong></p>
+<p>Imagine building a grammar checker. Constituency parsing can identify malformed phrases or sentences that violate grammatical rules. For example, if a sentence lacks a verb phrase where one is expected, the constituency parser will fail to produce a valid tree according to the grammar rules. Similarly, in text generation, constituency parsing can be used to ensure that generated sentences adhere to a predefined grammar, leading to more natural and grammatically correct output.</p>
+<p><strong>Dependency Parsing Application: Information Extraction</strong></p>
+<p>Consider the task of extracting relationships between entities from text. For example, given the sentence "Elon Musk founded SpaceX," dependency parsing can identify "Elon Musk" as the nominal subject (nsubj) of the verb "founded," and "SpaceX" as the direct object (dobj). This information can then be used to extract the relationship "founder-of" between Elon Musk and SpaceX.  This is crucial in building knowledge graphs and other information retrieval systems.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import spacy
+from nltk.tree import Tree #optional. For visualization in constituency parsing
+
+# Load a spaCy model (for dependency parsing)
+nlp = spacy.load(&quot;en_core_web_sm&quot;)
+
+# Example sentence
+text = &quot;The quick brown fox jumps over the lazy dog.&quot;
+
+# Dependency Parsing using spaCy
+doc = nlp(text)
+
+print(&quot;Dependency Parsing:&quot;)
+for token in doc:
+    print(f&quot;{token.text} --{token.dep_}-&gt; {token.head.text}&quot;)
+
+# Constituency Parsing using nltk and benepar (requires additional setup)
+
+try:
+    import benepar
+    benepar.download('benepar_en3')  # Download the model (first time only)
+    parser = benepar.Parser(&quot;benepar_en3&quot;)
+
+    #Note that you would typically need to perform tokenization separately here
+    #Using the sentence from before, but must be tokenized.
+    tokenized_text = text.split() #A simple tokenization
+    tree = parser.parse(tokenized_text)
+
+    print(&quot;\nConstituency Parsing:&quot;)
+    tree.pretty_print() #Optional for visualization
+
+    #To get the tree as a string:
+    #print(tree)
+
+except ImportError:
+    print(&quot;\nConstituency Parsing: Please install benepar.  `pip install benepar`&quot;)
+except LookupError:
+    print(&quot;\nConstituency Parsing: Please run benepar.download('benepar_en3')&quot;)
+except Exception as e:
+    print(f&quot;Constituency Parsing Error: {e}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Dependency Parsing (spaCy):</strong> The <code>spacy</code> library is used for dependency parsing.  The code iterates through each token (word) in the sentence and prints the word, its dependency relation (<code>token.dep_</code>), and the word it depends on (<code>token.head.text</code>).</li>
+<li><strong>Constituency Parsing (benepar and nltk):</strong>  The <code>benepar</code> library (built on top of PyTorch) is used in conjunction with <code>nltk</code> for constituency parsing. <code>benepar</code> provides a pre-trained model for English.  The code loads the model, parses the sentence (assuming a simple tokenization), and prints the resulting tree structure. <code>nltk</code>'s <code>Tree.pretty_print()</code> provides a visual representation of the tree, making it easier to understand the hierarchical structure.  If <code>benepar</code> is not installed, it gives instructions to do so.</li>
+</ul>
+<p><strong>Note:</strong> The <code>benepar</code> approach requires you to first tokenize the sentence before parsing. Also, be aware that setting up <code>benepar</code> can be slightly more involved than <code>spaCy</code>.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given a specific NLP task, how would you choose between using constituency parsing and dependency parsing, and are there situations where combining both approaches would be beneficial? Explain your reasoning with examples. For example, what kind of task would require using both?</p>
+</body>
+</html>

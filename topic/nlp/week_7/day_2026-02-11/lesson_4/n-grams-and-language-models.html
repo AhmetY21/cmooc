@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N-Grams and Language Models</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-n-grams-and-language-models">Topic: N-Grams and Language Models</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>N-grams:</strong> An N-gram is a contiguous sequence of <em>n</em> items from a given sequence of text or speech. The items can be characters, syllables, words, or phrases, depending on the application.</p>
+<ul>
+<li>If <em>n</em> = 1, it's a unigram (e.g., "the")</li>
+<li>If <em>n</em> = 2, it's a bigram (e.g., "the cat")</li>
+<li>If <em>n</em> = 3, it's a trigram (e.g., "the cat sat")</li>
+<li>And so on...</li>
+</ul>
+<p><strong>Language Model (LM):</strong> A language model assigns a probability to a sequence of words (or characters). It tries to predict the next word in a sequence, given the preceding words. The probability of a sequence <em>w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>m</sub></em> is denoted as P(w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>m</sub>).</p>
+<p>An N-gram language model calculates this probability based on the frequencies of N-grams in a training corpus. The basic idea is that the probability of a word depends only on the <em>n-1</em> preceding words (Markov assumption).  For example, in a bigram model:</p>
+<p>P(w<sub>i</sub> | w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>i-1</sub>) ≈ P(w<sub>i</sub> | w<sub>i-1</sub>)</p>
+<p>Therefore, the probability of a sequence using a bigram model is:</p>
+<p>P(w<sub>1</sub>, w<sub>2</sub>, ..., w<sub>m</sub>) ≈ P(w<sub>1</sub>) * P(w<sub>2</sub> | w<sub>1</sub>) * P(w<sub>3</sub> | w<sub>2</sub>) * ... * P(w<sub>m</sub> | w<sub>m-1</sub>)</p>
+<p><strong>Uses:</strong></p>
+<ul>
+<li><strong>Text generation:</strong>  Generate new text that resembles the training data.</li>
+<li><strong>Speech recognition:</strong>  Help determine the most likely sequence of words given the acoustic signal.</li>
+<li><strong>Machine translation:</strong>  Evaluate the fluency of translated text.</li>
+<li><strong>Spelling correction:</strong> Suggest corrections based on probable word sequences.</li>
+<li><strong>Autocomplete:</strong>  Predict the next word a user is likely to type.</li>
+<li><strong>Sentiment analysis:</strong> Can be used as features to enhance classification models.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario: Autocomplete Functionality</strong></p>
+<p>Imagine you're building an autocomplete feature for a search engine.  A user types "the qu".  Using an N-gram language model, you can predict the next word.</p>
+<ol>
+<li><strong>Training Data:</strong> You train a bigram language model on a large corpus of text (e.g., web pages, books). This corpus is used to estimate probabilities P(w<sub>i</sub> | w<sub>i-1</sub>).</li>
+<li><strong>Prediction:</strong> Given the input "the qu", you look for bigrams that start with "qu". For example, you might find "qu ick", "qu ite", "qu estion", etc.</li>
+<li><strong>Probability Calculation:</strong> You calculate the probabilities P("ick" | "qu"), P("ite" | "qu"), P("estion" | "qu"), etc., based on the trained model.</li>
+<li><strong>Ranking:</strong> You rank the possible next words based on their probabilities.  If "qu ick" is the most frequent bigram starting with "qu" in your training data, then "ick" will have the highest probability.</li>
+<li><strong>Suggestion:</strong> You suggest the most probable next word to the user (e.g., "quick").  You might also offer a few other suggestions with lower probabilities.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import nltk
+from nltk.tokenize import word_tokenize
+from collections import defaultdict
+
+def create_ngrams(text, n):
+    &quot;&quot;&quot;
+    Generates n-grams from a given text.
+    &quot;&quot;&quot;
+    tokenized_text = word_tokenize(text.lower())
+    ngrams = zip(*[tokenized_text[i:] for i in range(n)])
+    return [&quot; &quot;.join(ngram) for ngram in ngrams]
+
+def train_ngram_model(corpus, n):
+    &quot;&quot;&quot;
+    Trains an n-gram language model from a corpus.
+    &quot;&quot;&quot;
+    ngram_counts = defaultdict(lambda: defaultdict(lambda: 0))
+
+    for sentence in corpus:
+        ngrams = create_ngrams(sentence, n)
+        for ngram in ngrams:
+            history, word = ngram.rsplit(&quot; &quot;, 1)  # Split into history and target word
+            ngram_counts[history][word] += 1
+
+    ngram_probabilities = defaultdict(lambda: defaultdict(lambda: 0.0))
+    for history, words in ngram_counts.items():
+        total_count = float(sum(words.values()))
+        for word, count in words.items():
+            ngram_probabilities[history][word] = count / total_count
+
+    return ngram_probabilities
+
+# Example Usage
+corpus = [
+    &quot;The cat sat on the mat.&quot;,
+    &quot;The dog sat on the log.&quot;,
+    &quot;The cat ate the fish.&quot;
+]
+
+# Train a bigram model (n=2)
+bigram_model = train_ngram_model(corpus, 2)
+
+# Predict the next word after &quot;the&quot;
+if &quot;the&quot; in bigram_model:
+    predictions = bigram_model[&quot;the&quot;]
+    sorted_predictions = sorted(predictions.items(), key=lambda item: item[1], reverse=True) # Sort by probability
+    print(&quot;Predictions after 'the':&quot;, sorted_predictions)
+else:
+    print(&quot;'the' not found in the trained model.&quot;)
+
+# Example of calculating the probability of a sentence:
+def calculate_sentence_probability(sentence, model, n):
+    &quot;&quot;&quot;Calculates the probability of a sentence given an n-gram model.&quot;&quot;&quot;
+    ngrams = create_ngrams(sentence, n)
+    probability = 1.0
+    for ngram in ngrams:
+        history, word = ngram.rsplit(&quot; &quot;, 1)
+        if history in model and word in model[history]:
+            probability *= model[history][word]
+        else:
+            #Handle unseen n-grams. Can use smoothing here
+            probability = 0  #Probability of 0 if ngram is not present in the model
+            break #no need to continue, result is zero.
+    return probability
+
+sentence_to_check = &quot;the cat sat&quot;
+sentence_probability = calculate_sentence_probability(sentence_to_check, bigram_model, 2)
+print(f&quot;Probability of '{sentence_to_check}': {sentence_probability}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong><code>create_ngrams(text, n)</code>:</strong> This function takes text and <code>n</code> as input and returns a list of n-grams. It uses <code>nltk</code> for tokenization.</li>
+<li><strong><code>train_ngram_model(corpus, n)</code>:</strong> This function takes a corpus of text and <code>n</code> as input and trains an n-gram language model.  It calculates the conditional probabilities of words given their history (the preceding <em>n-1</em> words). The results are stored in a nested dictionary <code>ngram_probabilities</code>.</li>
+<li><strong>Example Usage:</strong> The code provides an example of how to train a bigram model and use it to predict the next word after "the". The <code>calculate_sentence_probability</code> function calculates the probability of a given sentence using the trained model.</li>
+<li><strong>Smoothing:</strong> The code includes a very simple way to handle cases where the n-gram is not in the model (by setting the probability to 0). More sophisticated smoothing techniques (like Laplace smoothing, add-k smoothing, or Kneser-Ney smoothing) are typically used in practice to avoid zero probabilities and improve the model's generalization ability.  Smoothing is essential for handling unseen n-grams.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can we improve the performance of an N-gram language model, especially in dealing with unseen n-grams and the sparsity of data? What are some common smoothing techniques, and how do they work?</p>
+</body>
+</html>

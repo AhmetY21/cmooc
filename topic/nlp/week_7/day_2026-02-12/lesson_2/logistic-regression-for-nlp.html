@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logistic Regression for NLP</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-logistic-regression-for-nlp">Topic: Logistic Regression for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Logistic Regression, in the context of NLP, is a statistical method used for binary or multi-class classification tasks where the goal is to predict the probability of a sample belonging to a particular class. Although named "regression," it's fundamentally a classification algorithm.</p>
+<p>Here's a breakdown:</p>
+<ul>
+<li>
+<p><strong>The core idea:</strong> Logistic regression models the probability of a binary outcome (e.g., spam/not spam, positive sentiment/negative sentiment) as a function of input features. It uses the sigmoid function (also known as the logistic function) to map the linear combination of input features to a probability between 0 and 1.</p>
+</li>
+<li>
+<p><strong>Mathematical formulation:</strong></p>
+<ul>
+<li>Let <em>x</em> be a vector of input features (e.g., word counts, TF-IDF values).</li>
+<li>Let <em>w</em> be a vector of weights corresponding to each feature.</li>
+<li>Let <em>b</em> be a bias term (also called the intercept).</li>
+<li>The linear combination of features is:  <em>z = w<sup>T</sup>x + b</em></li>
+<li>The sigmoid function, <em>σ(z)</em>, is defined as:  <em>σ(z) = 1 / (1 + e<sup>-z</sup>)</em></li>
+<li>The predicted probability <em>P(y=1|x)</em> of belonging to class 1 is: <em>P(y=1|x) = σ(w<sup>T</sup>x + b)</em></li>
+<li>The predicted probability <em>P(y=0|x)</em> of belonging to class 0 is: <em>P(y=0|x) = 1 - P(y=1|x)</em></li>
+</ul>
+</li>
+<li>
+<p><strong>Multi-class extension:</strong>  For multi-class classification (e.g., sentiment analysis with positive, negative, and neutral classes), logistic regression can be extended using techniques like "one-vs-rest" (OvR) or "multinomial logistic regression" (also called softmax regression). In OvR, a separate logistic regression model is trained for each class, treating that class as the positive class and all other classes as the negative class.  Softmax regression directly models the probabilities of all classes, ensuring they sum to 1.</p>
+</li>
+<li>
+<p><strong>How we use it in NLP:</strong></p>
+<ol>
+<li><strong>Feature Extraction:</strong>  We extract relevant features from the text data. Common features include:<ul>
+<li><strong>Bag-of-Words (BoW):</strong> Count the occurrences of each word in a document.</li>
+<li><strong>TF-IDF (Term Frequency-Inverse Document Frequency):</strong> Weights words based on their frequency in the document and their rarity across the entire corpus.</li>
+<li><strong>N-grams:</strong> Sequences of <em>n</em> words (e.g., "very good" as a 2-gram).</li>
+<li><strong>Word Embeddings (Word2Vec, GloVe, FastText):</strong>  Represent words as dense vectors capturing semantic relationships.</li>
+</ul>
+</li>
+<li><strong>Training:</strong>  We train the logistic regression model using labeled data (text documents with corresponding class labels). The model learns the optimal weights <em>w</em> and bias <em>b</em> that best separate the classes.</li>
+<li><strong>Prediction:</strong>  For new, unseen text data, we extract the same features and use the trained model to predict the probability of belonging to each class. The class with the highest probability is assigned as the predicted class.</li>
+</ol>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>A common application scenario is <strong>Spam Detection</strong>.</p>
+<ul>
+<li>
+<p><strong>Problem:</strong>  Given an email, determine whether it is spam or not spam (ham).</p>
+</li>
+<li>
+<p><strong>Features:</strong></p>
+<ul>
+<li>Word frequencies (e.g., the number of times words like "urgent," "free," "discount" appear).</li>
+<li>Presence of certain phrases (e.g., "click here," "limited time offer").</li>
+<li>Sender's email address.</li>
+<li>Subject line length.</li>
+<li>Use of excessive punctuation.</li>
+</ul>
+</li>
+<li>
+<p><strong>Logistic Regression Model:</strong>  A logistic regression model is trained on a dataset of labeled emails (spam or ham) using these features.  The model learns the weights associated with each feature, indicating how much each feature contributes to the probability of an email being spam.  For instance, a high frequency of the word "urgent" might have a high positive weight, increasing the probability of the email being classified as spam.</p>
+</li>
+<li>
+<p><strong>Prediction:</strong> When a new email arrives, the same features are extracted. The trained logistic regression model calculates the probability of the email being spam. If the probability exceeds a certain threshold (e.g., 0.5), the email is classified as spam; otherwise, it is classified as ham.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>sklearn</code> library in Python provides a straightforward way to implement Logistic Regression.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import accuracy_score
+
+# Sample data (replace with your actual data)
+documents = [
+    &quot;This is a great movie!&quot;,
+    &quot;I hated the movie, it was terrible.&quot;,
+    &quot;Free offer, click here!&quot;,
+    &quot;Important information regarding your account.&quot;,
+    &quot;Excellent service, highly recommended.&quot;
+]
+labels = [1, 0, 0, 1, 1]  # 1 = positive/ham, 0 = negative/spam
+
+# 1. Feature Extraction using TF-IDF
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(documents)
+
+# 2. Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2, random_state=42)
+
+# 3. Train the Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# 4. Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# 5. Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+
+# Example of predicting on a new document
+new_document = [&quot;This is a scam!&quot;]
+new_X = vectorizer.transform(new_document) # Important: Use transform, not fit_transform
+prediction = model.predict(new_X)[0]
+print(f&quot;Prediction for '{new_document[0]}': {prediction}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li>
+<p><strong><code>TfidfVectorizer</code>:</strong>  This is used to convert the text documents into a matrix of TF-IDF features.  <code>fit_transform</code> is used on the training data to learn the vocabulary and transform it. <code>transform</code> is used on the test data and any new data to apply the learned vocabulary without learning new terms. Using <code>fit_transform</code> on the test data would lead to data leakage and incorrect evaluation.</p>
+</li>
+<li>
+<p><strong><code>train_test_split</code>:</strong>  The data is split into training and testing sets to evaluate the model's performance on unseen data.</p>
+</li>
+<li>
+<p><strong><code>LogisticRegression</code>:</strong>  A Logistic Regression model is initialized and trained on the training data using <code>model.fit(X_train, y_train)</code>.</p>
+</li>
+<li>
+<p><strong><code>model.predict(X_test)</code>:</strong>  The trained model is used to predict the labels for the test data.</p>
+</li>
+<li>
+<p><strong><code>accuracy_score</code>:</strong> The accuracy of the model is calculated by comparing the predicted labels to the true labels.</p>
+</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of Logistic Regression for NLP compare to more complex models like Recurrent Neural Networks (RNNs) or Transformers (e.g., BERT) for tasks like sentiment analysis or text classification, and when would you choose Logistic Regression over these more advanced models?  Consider factors such as dataset size, computational resources, interpretability, and desired accuracy.</p>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naive Bayes Classifier for Text</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-naive-bayes-classifier-for-text">Topic: Naive Bayes Classifier for Text</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>The Naive Bayes Classifier is a probabilistic machine learning algorithm that's particularly well-suited for text classification tasks. It's based on Bayes' Theorem with a "naive" assumption of feature independence. In the context of text, this means the algorithm assumes that the occurrence of a particular word in a document is independent of the occurrence of other words, given the document's class.  While this assumption is rarely true in real-world text (words <em>do</em> tend to appear in related clusters), the Naive Bayes classifier often performs surprisingly well, especially for its simplicity and speed.</p>
+<p><strong>Bayes' Theorem:</strong>  The foundation of the classifier. It states:</p>
+<p>P(c|d) = [P(d|c) * P(c)] / P(d)</p>
+<p>Where:</p>
+<ul>
+<li>P(c|d) is the <em>posterior probability</em> of the document <code>d</code> belonging to class <code>c</code> (the probability we want to calculate).</li>
+<li>P(d|c) is the <em>likelihood</em> of observing document <code>d</code> given class <code>c</code>.  This is where the naive assumption comes in.  If <code>d</code> is a set of words {w1, w2, ..., wn}, then P(d|c) is approximated as P(w1|c) * P(w2|c) * ... * P(wn|c). Each P(wi|c) is the probability of seeing word <em>wi</em> in documents of class <em>c</em>.</li>
+<li>P(c) is the <em>prior probability</em> of class <code>c</code> (the probability of a document belonging to class <code>c</code> regardless of its content).  This is usually estimated from the proportion of documents belonging to each class in the training data.</li>
+<li>P(d) is the <em>evidence</em> (the probability of seeing document <code>d</code>).  Since we're only interested in comparing the probabilities for different classes for the <em>same</em> document, P(d) acts as a normalizing constant and can often be ignored in the classification process.  We only need to find the class <code>c</code> that maximizes P(c|d).</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<ol>
+<li>
+<p><strong>Training:</strong>  The classifier is trained on a labeled dataset of text documents, where each document is assigned to a specific class (e.g., "spam" or "not spam," "positive review" or "negative review"). During training, the algorithm estimates the probabilities P(wi|c) for each word <em>wi</em> in the vocabulary and for each class <em>c</em>, and it calculates the prior probabilities P(c).</p>
+</li>
+<li>
+<p><strong>Classification:</strong> To classify a new, unseen document, the algorithm calculates P(c|d) for each possible class <em>c</em> using the learned probabilities.  The document is then assigned to the class with the highest posterior probability.</p>
+</li>
+</ol>
+<p><strong>Types of Naive Bayes Classifiers:</strong></p>
+<p>Different variations of Naive Bayes are used depending on the nature of the features:</p>
+<ul>
+<li><strong>Multinomial Naive Bayes:</strong>  Best suited for discrete features, such as word counts or term frequencies (how many times a word appears in a document).  This is the most common type used for text classification.</li>
+<li><strong>Bernoulli Naive Bayes:</strong> Suitable for binary features (e.g., does a word appear in the document or not?).</li>
+<li><strong>Gaussian Naive Bayes:</strong>  Suitable for continuous features. This is generally not used for text directly, but could be used if features like average sentence length or other numerical attributes are used in addition to the text.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Here are some common application scenarios for Naive Bayes classifiers in text processing:</p>
+<ul>
+<li><strong>Spam Filtering:</strong> Identifying email messages as either spam or not spam. This was one of the early and very successful applications of Naive Bayes.</li>
+<li><strong>Sentiment Analysis:</strong> Determining the sentiment (positive, negative, neutral) expressed in a piece of text, such as a customer review or a social media post.</li>
+<li><strong>Topic Classification:</strong> Assigning documents to different categories or topics, such as sports, politics, or technology.  News categorization is a common use case.</li>
+<li><strong>Language Detection:</strong> Identifying the language of a text document.</li>
+<li><strong>Author Attribution:</strong> Determining the author of a text based on their writing style (though more sophisticated methods often outperform Naive Bayes in this area).</li>
+<li><strong>Fake News Detection:</strong> Identifying potentially false or misleading news articles.</li>
+</ul>
+<p>Naive Bayes is often chosen for these applications due to its speed, simplicity, and reasonable accuracy, especially when dealing with large datasets.  It serves as a good baseline model.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>scikit-learn</code> library in Python to implement a Naive Bayes classifier for text classification.  Here's an example using <code>MultinomialNB</code> after text vectorization using <code>TfidfVectorizer</code>:</p>
+<pre class="codehilite"><code class="language-python">from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# Sample data (replace with your actual data)
+data = [
+    (&quot;This is a positive movie review.&quot;, &quot;positive&quot;),
+    (&quot;This is an excellent film.&quot;, &quot;positive&quot;),
+    (&quot;I did not enjoy this movie at all.&quot;, &quot;negative&quot;),
+    (&quot;What a terrible film.&quot;, &quot;negative&quot;),
+    (&quot;This movie was okay.&quot;, &quot;neutral&quot;),
+]
+
+# Separate text and labels
+texts = [text for text, label in data]
+labels = [label for text, label in data]
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=42)
+
+# Vectorize the text using TfidfVectorizer
+vectorizer = TfidfVectorizer()
+X_train_vectors = vectorizer.fit_transform(X_train)
+X_test_vectors = vectorizer.transform(X_test)  # Important: only transform the test data
+
+# Create a Multinomial Naive Bayes classifier
+classifier = MultinomialNB()
+
+# Train the classifier
+classifier.fit(X_train_vectors, y_train)
+
+# Make predictions on the test set
+y_pred = classifier.predict(X_test_vectors)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f&quot;Accuracy: {accuracy}&quot;)
+print(classification_report(y_test, y_pred))
+
+# Example of predicting new text
+new_text = [&quot;This is a great movie!&quot;]
+new_text_vectors = vectorizer.transform(new_text)
+prediction = classifier.predict(new_text_vectors)
+print(f&quot;Prediction for new text: {prediction}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> We create sample data (texts and labels).</li>
+<li><strong>Train/Test Split:</strong>  The data is split into training and testing sets.</li>
+<li><strong>Text Vectorization:</strong> <code>TfidfVectorizer</code> converts the text into numerical features that the Naive Bayes classifier can understand.  TF-IDF (Term Frequency-Inverse Document Frequency) measures the importance of words in a document relative to a corpus. The vectorizer is fit on the <em>training</em> data and then <em>transformed</em> on both training and test data.  This is crucial to avoid data leakage.</li>
+<li><strong>Classifier Initialization:</strong>  <code>MultinomialNB</code> is initialized.</li>
+<li><strong>Training:</strong> The classifier is trained using the training data and corresponding labels.</li>
+<li><strong>Prediction:</strong> The classifier predicts labels for the test set.</li>
+<li><strong>Evaluation:</strong> The accuracy and classification report are used to evaluate the model's performance.</li>
+<li><strong>New Text Prediction:</strong>  Demonstrates how to predict the class of a new unseen piece of text, making sure to transform it using the <em>same</em> vectorizer.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>While Naive Bayes is computationally efficient and relatively easy to implement, its "naive" independence assumption is often violated in real-world text data. What are some strategies to mitigate the impact of this assumption, or alternative algorithms that address this issue more directly while still maintaining reasonable computational cost? Consider factors such as feature engineering techniques, parameter tuning, and algorithmic alternatives.</p>
+</body>
+</html>

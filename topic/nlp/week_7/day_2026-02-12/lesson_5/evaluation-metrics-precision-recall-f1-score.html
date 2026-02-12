@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation Metrics: Precision, Recall, F1-Score</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-evaluation-metrics-precision-recall-f1-score">Topic: Evaluation Metrics: Precision, Recall, F1-Score</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Precision, Recall, and F1-Score are evaluation metrics commonly used to assess the performance of classification models, especially in tasks like information retrieval, machine learning, and natural language processing. They provide a more nuanced understanding of a model's performance than simple accuracy, especially when dealing with imbalanced datasets (where one class has significantly more instances than the other).</p>
+<ul>
+<li>
+<p><strong>Precision:</strong> Precision measures the proportion of positive identifications that were actually correct. It answers the question: "Of all the instances the model predicted as positive, how many were actually positive?"  A high precision indicates that the model has a low rate of <em>false positives</em> (i.e., it's good at avoiding labeling negative instances as positive).</p>
+<p><strong>Formula:</strong> Precision = True Positives / (True Positives + False Positives)</p>
+</li>
+<li>
+<p><strong>Recall:</strong> Recall measures the proportion of actual positives that were correctly identified by the model. It answers the question: "Of all the actual positive instances, how many did the model correctly identify?"  A high recall indicates that the model has a low rate of <em>false negatives</em> (i.e., it's good at finding all the positive instances).</p>
+<p><strong>Formula:</strong> Recall = True Positives / (True Positives + False Negatives)</p>
+</li>
+<li>
+<p><strong>F1-Score:</strong> The F1-Score is the harmonic mean of precision and recall. It provides a single score that balances both concerns. It's particularly useful when you want to find a balance between precision and recall, as high performance on both is desired.</p>
+<p><strong>Formula:</strong> F1-Score = 2 * (Precision * Recall) / (Precision + Recall)</p>
+</li>
+</ul>
+<p>In summary:</p>
+<ul>
+<li>Use these metrics when you want to understand <em>how</em> your classification model is performing in terms of correctly identifying positive instances and avoiding errors.</li>
+<li>Consider precision when minimizing false positives is crucial (e.g., spam detection, where misclassifying a legitimate email as spam is highly undesirable).</li>
+<li>Consider recall when minimizing false negatives is crucial (e.g., disease detection, where missing a positive case has severe consequences).</li>
+<li>Use the F1-score when you want to balance both precision and recall or when the cost of false positives and false negatives are similar.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's consider a scenario where we are building a machine learning model to detect fraudulent transactions in online banking.</p>
+<ul>
+<li><strong>Positive Class:</strong> Fraudulent transaction</li>
+<li><strong>Negative Class:</strong> Non-fraudulent transaction</li>
+</ul>
+<p>In this case:</p>
+<ul>
+<li><strong>High Precision:</strong>  Ensuring that when the model flags a transaction as fraudulent, it is highly likely to be genuinely fraudulent.  A low precision would mean many legitimate transactions are incorrectly flagged, causing customer inconvenience and distrust.</li>
+<li><strong>High Recall:</strong> Ensuring that the model detects as many fraudulent transactions as possible.  A low recall would mean that many fraudulent transactions slip through undetected, leading to financial losses.</li>
+<li><strong>F1-Score:</strong> A good balance between not annoying legitimate customers too frequently (precision) and catching as many fraudulent activities as possible (recall).</li>
+</ul>
+<p>In this particular scenario, achieving a high recall might be more important initially, even at the cost of a slightly lower precision. This is because the cost of missing a fraudulent transaction is potentially much higher than the cost of temporarily flagging a legitimate transaction. A human reviewer can later verify the transactions flagged by the model.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>scikit-learn</code> library in Python provides convenient functions for calculating precision, recall, and F1-score.</p>
+<pre class="codehilite"><code class="language-python">from sklearn.metrics import precision_score, recall_score, f1_score
+
+# Example:
+y_true = [0, 1, 0, 1, 0, 0, 1, 1]  # Actual labels
+y_pred = [0, 1, 1, 0, 0, 1, 1, 0]  # Predicted labels
+
+precision = precision_score(y_true, y_pred)
+recall = recall_score(y_true, y_pred)
+f1 = f1_score(y_true, y_pred)
+
+print(&quot;Precision:&quot;, precision)
+print(&quot;Recall:&quot;, recall)
+print(&quot;F1-Score:&quot;, f1)
+
+# Weighted average F1
+f1_weighted = f1_score(y_true, y_pred, average='weighted')
+print(&quot;Weighted F1-Score:&quot;, f1_weighted)
+
+# Using classification_report for all metrics at once
+from sklearn.metrics import classification_report
+
+report = classification_report(y_true, y_pred)
+print(report)
+</code></pre>
+
+<p>Explanation:</p>
+<ul>
+<li><code>precision_score(y_true, y_pred)</code> calculates the precision score.</li>
+<li><code>recall_score(y_true, y_pred)</code> calculates the recall score.</li>
+<li><code>f1_score(y_true, y_pred)</code> calculates the F1-score.</li>
+<li><code>average='weighted'</code> in <code>f1_score</code> calculates a weighted average of the F1-scores for each class, taking into account the number of instances in each class. Useful for imbalanced datasets. Other options for <code>average</code> include <code>'macro'</code> (unweighted average of F1-scores for each class) and <code>'micro'</code> (calculate metrics globally by counting the total true positives, false negatives and false positives).</li>
+<li><code>classification_report(y_true, y_pred)</code> generates a comprehensive report including precision, recall, F1-score, and support (number of instances) for each class, along with averages.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do these metrics relate to the Receiver Operating Characteristic (ROC) curve and Area Under the Curve (AUC), and when would I prefer to use ROC/AUC over Precision/Recall/F1-score, or vice versa?</p>
+</body>
+</html>

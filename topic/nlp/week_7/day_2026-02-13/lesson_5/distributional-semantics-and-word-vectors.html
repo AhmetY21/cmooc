@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributional Semantics and Word Vectors</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-distributional-semantics-and-word-vectors">Topic: Distributional Semantics and Word Vectors</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Distributional semantics is a theory that states that words that occur in similar contexts tend to have similar meanings. This is often summarized as "You shall know a word by the company it keeps" (J.R. Firth). In simpler terms, the meaning of a word is determined by the words that frequently appear around it.</p>
+<p>Word vectors, also known as word embeddings, are numerical representations of words in a multi-dimensional space. These vectors are learned from large corpora of text using techniques based on distributional semantics. The core idea is that words with similar contexts will have similar vector representations. The distance between word vectors (e.g., cosine similarity) reflects the semantic similarity between the corresponding words.</p>
+<p><strong>How can we use it?</strong></p>
+<ul>
+<li><strong>Semantic Similarity:</strong> Determine how similar two words are in meaning.</li>
+<li><strong>Word Analogy:</strong> Solve analogies like "man is to woman as king is to ____" by performing vector arithmetic (king - man + woman ≈ queen).</li>
+<li><strong>Text Classification:</strong> Use word vectors as features in machine learning models for tasks like sentiment analysis or topic classification.</li>
+<li><strong>Machine Translation:</strong> Map words from one language to another by aligning their vector spaces.</li>
+<li><strong>Information Retrieval:</strong> Improve search relevance by matching queries to documents based on semantic similarity rather than just keyword matching.</li>
+<li><strong>Question Answering:</strong> Understand the meaning of questions and find relevant answers based on semantic relationships.</li>
+<li><strong>Named Entity Recognition:</strong> Improve accuracy by understanding the context of named entities.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Building a recommendation system for movies.</p>
+<p><strong>How distributional semantics and word vectors can help:</strong></p>
+<p>Instead of relying solely on genre or keyword matching, we can analyze the plot synopses of movies. We can train a word embedding model on a large corpus of movie descriptions and reviews. This model will learn vector representations for words.</p>
+<ol>
+<li>When a user rates a movie highly (e.g., "The Matrix"), we can identify the keywords related to that movie using the trained word embeddings.</li>
+<li>We can then search for other movies whose plot synopses contain words with high cosine similarity to the keywords identified in step 1.</li>
+<li>This allows the recommendation system to suggest movies that are semantically similar to the user's preferred movie, even if they don't share the exact same genre or keywords. For example, the system might recommend "Inception" because its plot synopsis contains words that are semantically similar to those found in "The Matrix" (e.g., "simulation," "reality," "dreams," "conspiracy").</li>
+</ol>
+<p>This approach captures more nuanced relationships between movies than simply matching keywords, leading to better and more relevant recommendations.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's how to train word vectors using the <code>gensim</code> library in Python:</p>
+<pre class="codehilite"><code class="language-python">from gensim.models import Word2Vec
+import nltk
+from nltk.corpus import brown
+
+# Download Brown corpus if you haven't already
+try:
+    brown.words()
+except LookupError:
+    nltk.download('brown')
+
+
+# Load the Brown corpus (a collection of text)
+sentences = brown.sents()
+
+# Train a Word2Vec model
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=5, workers=4)
+
+# `vector_size`: Dimensionality of the word vectors
+# `window`: Maximum distance between the current and predicted word within a sentence
+# `min_count`: Ignores all words with total frequency lower than this
+# `workers`: Use these many worker threads to train the model (=faster training)
+
+# Save the model (optional)
+model.save(&quot;word2vec.model&quot;)
+
+# Load a pre-trained model if you have one (instead of training)
+#model = Word2Vec.load(&quot;word2vec.model&quot;)
+
+
+# Access the vector for a word
+vector = model.wv['king']
+print(f&quot;Vector for 'king': {vector[:10]}...&quot;)  # Print only the first 10 elements
+
+# Find the most similar words to a given word
+similar_words = model.wv.most_similar('king', topn=5)
+print(f&quot;Words most similar to 'king': {similar_words}&quot;)
+
+# Solve an analogy
+try:
+    analogy = model.wv.most_similar(positive=['woman', 'king'], negative=['man'], topn=1)
+    print(f&quot;woman is to man as king is to: {analogy}&quot;)
+except KeyError as e:
+    print(f&quot;Some words are not in the vocabulary. Error: {e}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import necessary libraries:</strong> <code>gensim</code> for Word2Vec and <code>nltk</code> for accessing a text corpus.</li>
+<li><strong>Load a text corpus:</strong>  The <code>brown</code> corpus is used as an example.  You can replace this with your own dataset (a list of sentences, where each sentence is a list of words).</li>
+<li><strong>Train the Word2Vec model:</strong>  <code>Word2Vec()</code> takes the sentences as input and trains the model.  The parameters control the training process.</li>
+<li><strong>Save/Load the model (optional):</strong>  This allows you to reuse the trained model later without retraining.</li>
+<li><strong>Access word vectors:</strong> <code>model.wv['word']</code> retrieves the vector representation for a given word.</li>
+<li><strong>Find similar words:</strong> <code>model.wv.most_similar()</code> returns a list of words that are most similar to the given word based on cosine similarity.</li>
+<li><strong>Solve analogies:</strong> The <code>most_similar</code> function can also perform vector arithmetic to solve analogies (e.g., <code>woman - man + king</code>). It tries to find a word closest to the resulting vector.  A <code>try-except</code> block is used because the analogy might fail if one of the words is not in the model's vocabulary.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do different word embedding models (e.g., Word2Vec, GloVe, FastText) differ in their training objectives and how do these differences affect their performance on various NLP tasks? Specifically, when would you choose one model over another?</p>
+</body>
+</html>

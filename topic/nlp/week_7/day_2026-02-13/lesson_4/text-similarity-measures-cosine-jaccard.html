@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Similarity Measures (Cosine, Jaccard)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-text-similarity-measures-cosine-jaccard">Topic: Text Similarity Measures (Cosine, Jaccard)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Text similarity measures are quantitative metrics that assess how alike two pieces of text are. They provide a numerical score indicating the degree of similarity between textual data, allowing us to compare documents, sentences, or even individual words. These measures are crucial for a wide range of NLP tasks where identifying semantic relatedness is important. Two common measures are Cosine similarity and Jaccard similarity.</p>
+<ul>
+<li>
+<p><strong>Cosine Similarity:</strong> Cosine similarity measures the angle between two non-zero vectors in a multi-dimensional space. In the context of text, each document is represented as a vector, where each dimension corresponds to a word (or n-gram) and the value represents the frequency or TF-IDF weight of that word. The cosine similarity score is calculated as the cosine of the angle between these vectors. A cosine similarity of 1 indicates perfect similarity (same direction), 0 indicates orthogonality (no similarity), and -1 indicates complete opposition. The formula is:</p>
+<p><code>cosine_similarity(A, B) = (A . B) / (||A|| * ||B||)</code></p>
+<p>where:
+*   <code>A . B</code> is the dot product of vectors A and B.
+*   <code>||A||</code> and <code>||B||</code> are the magnitudes (Euclidean norms) of vectors A and B.</p>
+<p>We can use cosine similarity to:
+*   Find similar documents in a corpus.
+*   Build recommendation systems based on text content.
+*   Identify plagiarism or duplicate content.
+*   Cluster documents based on their content.</p>
+</li>
+<li>
+<p><strong>Jaccard Similarity:</strong> Jaccard similarity (also known as the Jaccard index) measures the size of the intersection of two sets divided by the size of the union of the sets.  In text analysis, these sets often represent the unique words (or n-grams) present in two documents. The Jaccard similarity ranges from 0 (no common elements) to 1 (identical sets). The formula is:</p>
+<p><code>Jaccard(A, B) = |A ∩ B| / |A ∪ B|</code></p>
+<p>where:
+*   <code>A ∩ B</code> is the intersection of sets A and B (elements present in both sets).
+*   <code>A ∪ B</code> is the union of sets A and B (all elements present in either set).</p>
+<p>We can use Jaccard similarity to:
+*   Compare the similarity of sets of words (or other features) extracted from texts.
+*   Identify near-duplicate documents based on their vocabulary.
+*   Evaluate the overlap between topics discussed in different documents.
+*   In information retrieval, Jaccard Similarity is commonly used for document comparison where the document's text is preprocessed into a bag-of-words.</p>
+</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Imagine you're building a news aggregator that groups similar news articles together.</p>
+<ul>
+<li>
+<p><strong>Cosine Similarity:</strong> You could use cosine similarity to compare the TF-IDF vectors of each news article. Articles with a high cosine similarity score would be grouped together, indicating they likely cover the same topic.  Articles discussing, for example, "Inflation rates" will form a cluster and news articles that do not will have a lower similarity score.</p>
+</li>
+<li>
+<p><strong>Jaccard Similarity:</strong>  You could use Jaccard similarity to compare the set of keywords extracted from each news article. Articles with a high Jaccard similarity would be grouped together, indicating they share a significant number of common keywords and thus are likely about the same topic. If two articles share the same keywords "interest", "rates", and "economic growth", their Jaccard similarity would be high.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from nltk.metrics import jaccard_distance
+import nltk
+nltk.download('punkt') # Necessary for tokenizing
+
+def calculate_cosine_similarity(text1, text2):
+    &quot;&quot;&quot;Calculates cosine similarity between two texts using TF-IDF.&quot;&quot;&quot;
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform([text1, text2])
+    return cosine_similarity(vectors[0], vectors[1])[0][0]
+
+def calculate_jaccard_similarity(text1, text2):
+    &quot;&quot;&quot;Calculates Jaccard similarity between two texts using set of words.&quot;&quot;&quot;
+    set1 = set(nltk.word_tokenize(text1))
+    set2 = set(nltk.word_tokenize(text2))
+    return 1 - jaccard_distance(set1, set2)  # jaccard_distance returns distance, so we subtract from 1 to get similarity
+
+
+# Example usage:
+text1 = &quot;This is the first document.&quot;
+text2 = &quot;This document is the second document.&quot;
+text3 = &quot;This is a completely different sentence.&quot;
+
+cosine_sim = calculate_cosine_similarity(text1, text2)
+jaccard_sim = calculate_jaccard_similarity(text1, text2)
+
+cosine_sim_diff = calculate_cosine_similarity(text1, text3)
+jaccard_sim_diff = calculate_jaccard_similarity(text1, text3)
+
+
+print(f&quot;Cosine Similarity (text1, text2): {cosine_sim}&quot;)
+print(f&quot;Jaccard Similarity (text1, text2): {jaccard_sim}&quot;)
+
+print(f&quot;Cosine Similarity (text1, text3): {cosine_sim_diff}&quot;)
+print(f&quot;Jaccard Similarity (text1, text3): {jaccard_sim_diff}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of pre-processing steps (e.g., stemming, lemmatization, stop word removal) affect the performance and interpretation of cosine and Jaccard similarity scores?  How would these choices differ based on the specific application?</p>
+</body>
+</html>

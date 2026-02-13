@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Topic Modeling: Latent Dirichlet Allocation (LDA)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-topic-modeling-latent-dirichlet-allocation-lda">Topic: Topic Modeling: Latent Dirichlet Allocation (LDA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Latent Dirichlet Allocation (LDA) is a generative probabilistic model for collections of discrete data such as text corpora.  It's a type of topic modeling algorithm used to discover the underlying thematic structure (topics) within a corpus of documents.  "Latent" means these topics are not explicitly observed but are inferred from the observed data (words in the documents).  "Dirichlet" refers to the Dirichlet distribution, which is used as a prior distribution for both the document-topic and topic-word distributions.</p>
+<p>Here's a simplified explanation of how LDA works:</p>
+<ul>
+<li><strong>Documents as Mixtures of Topics:</strong> LDA assumes each document is a mixture of multiple topics. For example, a news article might be 60% about "Politics" and 40% about "Economics."</li>
+<li><strong>Topics as Distributions over Words:</strong>  Each topic is a distribution over words.  For example, the "Politics" topic might have a high probability of containing words like "election," "candidate," "government," "policy," etc.</li>
+<li><strong>Generative Process:</strong>  LDA imagines that each document is generated as follows:<ol>
+<li>Choose a distribution over topics for the document (using a Dirichlet prior).</li>
+<li>For each word in the document:
+    a. Choose a topic from the document's topic distribution.
+    b. Choose a word from the chosen topic's word distribution.</li>
+</ol>
+</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<p>LDA can be used for various tasks:</p>
+<ul>
+<li><strong>Topic Discovery:</strong>  The primary use is to automatically discover the hidden topics present in a corpus.</li>
+<li><strong>Document Clustering:</strong> Group documents based on their dominant topics.</li>
+<li><strong>Information Retrieval:</strong>  Retrieve documents relevant to a specific topic.</li>
+<li><strong>Text Summarization:</strong>  Identify the main topics and use them to create summaries.</li>
+<li><strong>Feature Engineering:</strong> Use topic distributions as features for other machine learning models.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a large collection of research papers in the field of computer science.  We want to understand the main areas of research being conducted. Using LDA, we can:</p>
+<ol>
+<li><strong>Input:</strong> The corpus of research papers (represented as a bag of words).</li>
+<li><strong>LDA Model:</strong> Train an LDA model on this corpus. The model will estimate:<ul>
+<li>The topic distribution for each paper (e.g., paper 1 is 70% "Machine Learning," 20% "Computer Vision," 10% "Natural Language Processing").</li>
+<li>The word distribution for each topic (e.g., "Machine Learning" topic has a high probability of words like "algorithm," "model," "training," "neural network").</li>
+</ul>
+</li>
+<li><strong>Output:</strong> The LDA model will provide:<ul>
+<li>A list of topics (e.g., "Machine Learning," "Computer Vision," "Natural Language Processing," "Databases," "Networking").</li>
+<li>The most relevant words for each topic (providing an interpretation of the topic).</li>
+<li>The topic distribution for each research paper (indicating which topics each paper primarily covers).</li>
+</ul>
+</li>
+</ol>
+<p>This allows researchers and librarians to efficiently browse, categorize, and retrieve relevant research papers based on automatically discovered research areas. For example, someone interested in "Deep Learning" can easily identify papers with a high probability of belonging to the "Machine Learning" topic and containing relevant keywords like "neural networks" and "backpropagation."</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>gensim</code> library in Python is commonly used for topic modeling, including LDA.</p>
+<pre class="codehilite"><code class="language-python">import gensim
+from gensim import corpora
+
+# Sample documents (replace with your actual data)
+documents = [
+    &quot;This is the first document.&quot;,
+    &quot;This document is the second document.&quot;,
+    &quot;And this is the third one.&quot;,
+    &quot;Is this the first document?&quot;,
+]
+
+# 1. Tokenize and clean the text
+texts = [[word for word in document.lower().split()]
+         for document in documents]
+
+# 2. Create a dictionary (mapping words to IDs)
+dictionary = corpora.Dictionary(texts)
+
+# 3. Create a corpus (document-term matrix)
+corpus = [dictionary.doc2bow(text) for text in texts]
+
+# 4. Train the LDA model
+num_topics = 3  # Specify the desired number of topics
+lda_model = gensim.models.LdaModel(corpus, num_topics=num_topics, id2word=dictionary, passes=15)
+
+# 5. Print the topics and their associated words
+for topic_id in range(num_topics):
+    print(f&quot;Topic {topic_id + 1}:&quot;)
+    print(lda_model.print_topic(topic_id))
+
+# 6. Get the topic distribution for a specific document
+for i, doc in enumerate(documents):
+    bow = dictionary.doc2bow(doc.lower().split())  # Convert document to bag-of-words format
+    topic_distribution = lda_model.get_document_topics(bow)
+    print(f&quot;Document {i+1}: {doc}&quot;)
+    print(f&quot;Topic Distribution: {topic_distribution}\n&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ol>
+<li><strong>Import libraries:</strong> Imports <code>gensim</code> and <code>corpora</code>.</li>
+<li><strong>Sample Documents:</strong> Replace the sample documents with your own corpus.</li>
+<li><strong>Tokenization and Cleaning:</strong>  Converts documents to lowercase and splits them into words. This is a simplified example; you might want to add stemming, lemmatization, and stop word removal for better results.</li>
+<li><strong>Create Dictionary:</strong> <code>corpora.Dictionary</code> creates a mapping between words and unique IDs.</li>
+<li><strong>Create Corpus:</strong> <code>dictionary.doc2bow</code> converts each document into a "bag of words" representation, which is a list of (word ID, word count) tuples.  This is the input format required by <code>gensim</code>.</li>
+<li><strong>Train LDA Model:</strong>  <code>gensim.models.LdaModel</code> trains the LDA model.<ul>
+<li><code>corpus</code>: The bag-of-words representation of the documents.</li>
+<li><code>num_topics</code>: The number of topics you want to discover.  This is a crucial hyperparameter that often requires experimentation.</li>
+<li><code>id2word</code>:  The dictionary mapping word IDs to words.</li>
+<li><code>passes</code>: The number of times the model iterates through the entire corpus during training.  Higher values can lead to better results but also increase training time.</li>
+</ul>
+</li>
+<li><strong>Print Topics:</strong>  Prints the top words associated with each topic. <code>lda_model.print_topic</code> displays the words with the highest probabilities for each topic.</li>
+<li><strong>Document Topic Distribution:</strong> Shows which topics a document has a higher chance of belonging to.</li>
+</ol>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How can you evaluate the quality of the topics generated by LDA? Are there metrics or techniques to determine whether the discovered topics are meaningful and coherent?</p>
+</body>
+</html>

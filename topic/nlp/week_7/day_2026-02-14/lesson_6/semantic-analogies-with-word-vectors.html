@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semantic Analogies with Word Vectors</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-semantic-analogies-with-word-vectors">Topic: Semantic Analogies with Word Vectors</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Semantic analogies with word vectors leverage the distributional hypothesis: words that occur in similar contexts tend to have similar meanings. Word embeddings, like Word2Vec, GloVe, or fastText, encode these contextual similarities into vector spaces.  The core idea is that if "A is to B as C is to D" holds true semantically (e.g., "king is to man as queen is to woman"), then the vector relationship <code>vector(B) - vector(A) ≈ vector(D) - vector(C)</code> should approximately hold in the embedding space.</p>
+<p>More formally:</p>
+<ul>
+<li>Given words A, B, and C, we want to find a word D such that the analogy "A is to B as C is to D" holds.</li>
+<li>We represent each word with its corresponding vector in the embedding space: <code>v_A</code>, <code>v_B</code>, <code>v_C</code>.</li>
+<li>We compute a target vector <code>v_target = v_B - v_A + v_C</code>.</li>
+<li>We then search for the word vector <code>v_D</code> in the embedding space that is closest to <code>v_target</code>, typically using cosine similarity. The word corresponding to this nearest vector is our predicted D.</li>
+</ul>
+<p><strong>How we can use it:</strong></p>
+<ul>
+<li><strong>Testing embedding quality:</strong>  Analogies serve as a diagnostic tool for evaluating how well word embeddings capture semantic relationships. High accuracy on analogy tasks suggests a better quality embedding.</li>
+<li><strong>Relationship discovery:</strong> Exploring the embedding space to uncover hidden or unexpected relationships between words.  For example, discovering analogies related to specific concepts or domains.</li>
+<li><strong>Word prediction/completion:</strong> Filling in missing words in sentences or completing analogies based on context.</li>
+<li><strong>Knowledge graph completion:</strong>  Inferring relationships between entities in knowledge graphs by representing entities as vectors and leveraging analogy reasoning.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider the analogy "Paris is to France as Berlin is to ______".</p>
+<ul>
+<li>A high-quality word embedding should capture the "capital of" relationship.</li>
+<li>Therefore, the vector <code>vector("France") - vector("Paris")</code> should be similar to the vector <code>vector("Germany") - vector("Berlin")</code>.</li>
+<li>By computing <code>vector("France") - vector("Paris") + vector("Berlin")</code>, and searching for the word vector closest to the result, we expect to find "Germany" as the answer.</li>
+</ul>
+<p>Another application could be in medical diagnosis. Imagine having word embeddings representing medical concepts (diseases, symptoms, treatments).  One might ask: "Diabetes is to Insulin as Hyperthyroidism is to ______".  The system could potentially suggest treatment options based on the learned relationships.  This is a more speculative scenario and requires carefully constructed embeddings and validation.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+def analogy(word_vectors, word_a, word_b, word_c):
+  &quot;&quot;&quot;
+  Performs the analogy A:B :: C:D using word vectors.
+
+  Args:
+      word_vectors: A dictionary mapping words to their vector representations.
+      word_a: The word A in the analogy.
+      word_b: The word B in the analogy.
+      word_c: The word C in the analogy.
+
+  Returns:
+      The predicted word D in the analogy, or None if any word is not found.
+  &quot;&quot;&quot;
+
+  if word_a not in word_vectors or word_b not in word_vectors or word_c not in word_vectors:
+    print(&quot;One or more words not found in vocabulary.&quot;)
+    return None
+
+  v_a = word_vectors[word_a]
+  v_b = word_vectors[word_b]
+  v_c = word_vectors[word_c]
+
+  v_target = v_b - v_a + v_c
+
+  best_word = None
+  best_similarity = -1
+
+  for word, vector in word_vectors.items():
+    if word in [word_a, word_b, word_c]:  # Avoid returning A, B, or C
+      continue
+
+    similarity = cosine_similarity(v_target.reshape(1, -1), vector.reshape(1, -1))[0][0]
+
+    if similarity &gt; best_similarity:
+      best_similarity = similarity
+      best_word = word
+
+  return best_word
+
+
+# Example usage (requires a word_vectors dictionary to be loaded)
+# This example uses randomly initialized vectors for demonstration.
+# In a real scenario, you would load pretrained word vectors (e.g., from Gensim).
+
+# Create a dummy word_vectors dictionary for demonstration:
+word_vectors = {
+    &quot;king&quot;: np.array([1.0, 2.0, 3.0]),
+    &quot;man&quot;: np.array([4.0, 5.0, 6.0]),
+    &quot;queen&quot;: np.array([7.0, 8.0, 9.0]),
+    &quot;woman&quot;: np.array([10.0, 11.0, 12.0]),
+    &quot;prince&quot;: np.array([13.0, 14.0, 15.0]),
+    &quot;princess&quot;: np.array([16.0, 17.0, 18.0])
+}
+
+predicted_word = analogy(word_vectors, &quot;king&quot;, &quot;man&quot;, &quot;queen&quot;)
+
+if predicted_word:
+  print(f&quot;king is to man as queen is to {predicted_word}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some limitations of using semantic analogies with word vectors, and how can these limitations be addressed? For example, are there biases that the system can pick up on, or certain types of analogies it struggles with?</p>
+</body>
+</html>

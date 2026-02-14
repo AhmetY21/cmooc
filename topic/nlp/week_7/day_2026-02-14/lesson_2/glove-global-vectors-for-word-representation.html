@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GloVe (Global Vectors for Word Representation)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-glove-global-vectors-for-word-representation">Topic: GloVe (Global Vectors for Word Representation)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>GloVe (Global Vectors for Word Representation) is an unsupervised learning algorithm for obtaining vector representations of words. It's based on aggregating global word-word co-occurrence statistics from a corpus. Unlike methods like Word2Vec, which learn embeddings based on local context windows, GloVe leverages the entire corpus to capture global statistics.</p>
+<p>Specifically, GloVe aims to learn word vectors such that the dot product of two word vectors is equal to the logarithm of their frequency of co-occurrence.  Formally:</p>
+<p>Let:</p>
+<ul>
+<li><code>X</code> be the word-word co-occurrence matrix. <code>X_ij</code> represents the number of times word <code>j</code> appears in the context of word <code>i</code>.</li>
+<li><code>X_i = sum_j X_ij</code> be the number of times any word appears in the context of word <code>i</code>.</li>
+<li><code>P_ij = P(j|i) = X_ij / X_i</code> be the probability that word <code>j</code> appears in the context of word <code>i</code>.</li>
+<li><code>v_i</code> and <code>v_j</code> be the word vectors for words <code>i</code> and <code>j</code>, respectively.</li>
+<li><code>b_i</code> and <code>b_j</code> are bias terms for words <code>i</code> and <code>j</code>, respectively.</li>
+</ul>
+<p>GloVe's objective function is to minimize the following cost function:</p>
+<pre class="codehilite"><code>J = sum_{i=1}^{V} sum_{j=1}^{V} f(X_{ij}) (v_i^T v_j + b_i + b_j - log(X_{ij}))^2
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>V</code> is the vocabulary size.</li>
+<li>
+<p><code>f(X_{ij})</code> is a weighting function that helps prevent frequently co-occurring words from dominating the learning process.  A typical weighting function is:</p>
+<p><code>f(x) = (x/x_{max})^alpha  if x &lt; x_{max}
+       1                       otherwise</code></p>
+<p>where <code>x_{max}</code> is usually set to 100, and <code>alpha</code> is typically 0.75.</p>
+</li>
+</ul>
+<p><strong>How can we use it?</strong></p>
+<p>GloVe word embeddings can be used in a variety of downstream NLP tasks, including:</p>
+<ul>
+<li><strong>Word Similarity/Analogy tasks:</strong> Measuring semantic similarity between words by calculating the cosine similarity between their GloVe vectors. GloVe shines in analogy tasks (e.g., "king - man + woman = queen").</li>
+<li><strong>Text Classification:</strong> Used as input features to train text classifiers. The word vectors can be averaged, summed, or concatenated to represent a document.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Providing word embeddings as features for NER models.</li>
+<li><strong>Machine Translation:</strong> Contributing to better word alignment and semantic understanding in machine translation systems.</li>
+<li><strong>Question Answering:</strong>  Helping the model to understand the relationship between words in the question and the answer.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you are building a sentiment analysis model for movie reviews.  You want your model to understand the meaning of words like "fantastic," "terrible," "amazing," and "awful."  Instead of training word embeddings from scratch on your relatively small dataset of movie reviews, you can use pre-trained GloVe embeddings.</p>
+<p>You download a pre-trained GloVe model trained on a much larger corpus (e.g., Wikipedia and Gigaword). These embeddings have already learned the semantic relationships between words based on their co-occurrence patterns in the massive corpus.  Therefore:</p>
+<ol>
+<li>You map each word in your movie reviews to its corresponding GloVe vector.  If a word is not in the GloVe vocabulary, you can handle it using techniques like randomly initializing a vector or using a special <code>&lt;UNK&gt;</code> token vector.</li>
+<li>You use these GloVe vectors as input features to your sentiment analysis model (e.g., a Recurrent Neural Network or a Convolutional Neural Network).</li>
+</ol>
+<p>By using pre-trained GloVe embeddings, your sentiment analysis model can leverage the pre-existing knowledge of word meanings, leading to better performance, especially when you have limited training data.  The model can recognize that "fantastic" and "amazing" are semantically similar and have a positive sentiment, while "terrible" and "awful" are semantically similar and have a negative sentiment, even if those exact words don't appear frequently in your specific movie review dataset.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>While you won't train GloVe from scratch using Python in a typical application (due to computational complexity and the existence of pre-trained models), you <em>can</em> load and use pre-trained GloVe embeddings using libraries like Gensim or directly reading the embedding file.</p>
+<p>Here's an example using Gensim to load and use pre-trained GloVe vectors:</p>
+<pre class="codehilite"><code class="language-python">import gensim.downloader as api
+from gensim.models import KeyedVectors
+import numpy as np
+
+# Download the GloVe embeddings (e.g., glove-wiki-gigaword-100)
+# This only needs to be done once.  Uncomment the line below to download:
+# glove_vectors = api.load('glove-wiki-gigaword-100') # Takes some time.
+
+# Load pre-trained GloVe vectors
+try:
+    glove_vectors = api.load('glove-wiki-gigaword-100')
+except ValueError:
+    print(&quot;GloVe model not found. Downloading...&quot;)
+    glove_vectors = api.load('glove-wiki-gigaword-100')
+except OSError:
+    print(&quot;Could not load pre-trained GloVe model.  Check your internet connection and try again.&quot;)
+    exit()
+
+
+# Example usage:
+word1 = &quot;king&quot;
+word2 = &quot;queen&quot;
+word3 = &quot;man&quot;
+word4 = &quot;woman&quot;
+
+# Calculate cosine similarity between words
+similarity = glove_vectors.similarity(word1, word2)
+print(f&quot;Similarity between '{word1}' and '{word2}': {similarity}&quot;)
+
+# Solve an analogy:  king - man + woman = ?
+result = glove_vectors.most_similar(positive=['king', 'woman'], negative=['man'], topn=1)
+print(f&quot;Analogy result for '{word1} - {word3} + {word4}': {result}&quot;)
+
+# Get the vector representation of a word
+vector = glove_vectors[word1]
+print(f&quot;Vector representation of '{word1}': {vector[:10]}...&quot;) # Print first 10 elements
+
+# Check if a word is in the vocabulary:
+if &quot;apple&quot; in glove_vectors:
+    print(&quot;The word 'apple' is in the GloVe vocabulary.&quot;)
+else:
+    print(&quot;The word 'apple' is not in the GloVe vocabulary.&quot;)
+
+
+# Example for handling out-of-vocabulary words (simplified):
+def get_embedding(word, model):
+    try:
+        return model[word]
+    except KeyError:
+        # Handle out-of-vocabulary words.  Here, returning a zero vector.
+        # More sophisticated approaches exist (e.g., random initialization, character-level embeddings).
+        print(f&quot;Warning: Word '{word}' not found in vocabulary. Returning a zero vector.&quot;)
+        return np.zeros(model.vector_size)
+
+
+word_not_in_vocab = &quot;unbelievablysupercalifragilisticexpialidocious&quot;
+embedding = get_embedding(word_not_in_vocab, glove_vectors)
+print(f&quot;Embedding for '{word_not_in_vocab}': {embedding[:10]}...&quot;) # Prints all zeros
+</code></pre>
+
+<p>This code downloads and loads a pre-trained GloVe model, demonstrates how to calculate word similarity, solve analogies, retrieve word vectors, and handle out-of-vocabulary words.  Remember to install Gensim if you haven't already (<code>pip install gensim</code>). Also, the first time you run the script, it will download the glove embeddings, which can take some time.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are some techniques for handling out-of-vocabulary (OOV) words when using pre-trained GloVe embeddings, and what are the trade-offs between these techniques?</p>
+</body>
+</html>

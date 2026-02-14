@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word2Vec: Negative Sampling and Optimization</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-word2vec-negative-sampling-and-optimization">Topic: Word2Vec: Negative Sampling and Optimization</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Word2Vec</strong> is a popular technique for creating word embeddings, which are dense, low-dimensional vector representations of words that capture semantic relationships. Word embeddings allow machine learning models to better understand the meaning of words in context and perform various natural language processing tasks more effectively.</p>
+<p><strong>Negative Sampling</strong> is an optimization technique used in Word2Vec, specifically in the Skip-gram model, to address the computational cost of the original softmax approach.  The original softmax requires calculating the probability of a word given its context for <em>all</em> words in the vocabulary, which becomes prohibitively expensive for large vocabularies.</p>
+<p>Instead of updating all weights for every training example, negative sampling updates only a small sample of weights.  Specifically, for each target word/context word pair:</p>
+<ul>
+<li>It updates the weights for the target word/context word pair (positive example).</li>
+<li>It randomly samples a small number of "negative" words from the vocabulary (words that are unlikely to appear in the context of the target word).</li>
+<li>It updates the weights for these negative examples.</li>
+</ul>
+<p>The probability of a word being selected as a negative sample is proportional to its frequency in the corpus raised to the power of 3/4 (0.75). This helps to sample frequent words less often, and rare words more often, leading to better performance. The 3/4 power is empirically determined to work well.</p>
+<p>Formally, the objective function for Negative Sampling is to maximize:</p>
+<pre class="codehilite"><code>J = log σ(v_w^T u_c) + Σ_{i=1}^{k} log σ(-v_w^T u_{n_i})
+</code></pre>
+
+<p>where:</p>
+<ul>
+<li><code>w</code> is the target word.</li>
+<li><code>c</code> is the context word.</li>
+<li><code>v_w</code> is the vector representation of the target word.</li>
+<li><code>u_c</code> is the vector representation of the context word.</li>
+<li><code>n_i</code> are the <code>k</code> negative samples.</li>
+<li><code>σ(x) = 1 / (1 + exp(-x))</code> is the sigmoid function.</li>
+</ul>
+<p>The first term maximizes the probability that the target word and context word are related. The second term minimizes the probability that the target word and the negative samples are related.</p>
+<p><strong>Optimization</strong> in this context primarily refers to the optimization algorithm used to update the word vectors based on the negative sampling loss function. Stochastic Gradient Descent (SGD) and its variants (e.g., Adam, Adagrad) are commonly used. The learning rate is a crucial hyperparameter to tune.</p>
+<p>In summary, negative sampling makes Word2Vec scalable to large vocabularies by approximating the full softmax. We use it to efficiently train word embeddings that capture semantic relationships, which can then be used in downstream NLP tasks.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task on a large dataset of customer reviews.  We want to train a model to predict whether a review is positive or negative.</p>
+<p>Without word embeddings, we might represent words using one-hot encoding, which results in high-dimensional, sparse vectors that don't capture semantic relationships.  Using these features directly in a sentiment classifier would likely result in poor performance, especially if the dataset is limited or contains rare words.</p>
+<p>Instead, we can use Word2Vec with negative sampling to train word embeddings on the customer review dataset (or a larger corpus of text). These embeddings would capture semantic relationships between words, such as "good" being similar to "excellent" and "bad" being similar to "terrible."</p>
+<p>We can then use these pre-trained word embeddings as input features to the sentiment classifier. Each word in a review is replaced by its corresponding word vector, and these vectors are aggregated (e.g., averaged or summed) to create a feature vector for the entire review.  The classifier can then learn to associate these vector representations with positive or negative sentiment, leading to improved accuracy and generalization.  Even if the dataset contains rare words, the embeddings may capture enough similarity to existing words to make a good prediction.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>The <code>gensim</code> library provides a convenient implementation of Word2Vec with negative sampling.</p>
+<pre class="codehilite"><code class="language-python">from gensim.models import Word2Vec
+
+# Sample sentences (replace with your actual corpus)
+sentences = [
+    [&quot;the&quot;, &quot;quick&quot;, &quot;brown&quot;, &quot;fox&quot;, &quot;jumps&quot;, &quot;over&quot;, &quot;the&quot;, &quot;lazy&quot;, &quot;dog&quot;],
+    [&quot;dogs&quot;, &quot;are&quot;, &quot;loyal&quot;, &quot;and&quot;, &quot;friendly&quot;],
+    [&quot;cats&quot;, &quot;are&quot;, &quot;independent&quot;, &quot;and&quot;, &quot;curious&quot;],
+    [&quot;the&quot;, &quot;cat&quot;, &quot;sits&quot;, &quot;on&quot;, &quot;the&quot;, &quot;mat&quot;]
+]
+
+# Train Word2Vec model with negative sampling
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, sg=1, negative=5, workers=4)
+
+# vector_size: Dimensionality of the word vectors.
+# window: Maximum distance between the current and predicted word within a sentence.
+# min_count: Ignores all words with total frequency lower than this.
+# sg: 1 for skip-gram; otherwise, CBOW.
+# negative: Number of negative samples to draw for negative sampling.
+# workers: Use these many worker threads to train the model.
+
+# Access word vectors
+vector_of_word = model.wv[&quot;dog&quot;]  # Get the vector for the word &quot;dog&quot;
+print(vector_of_word)
+
+# Find similar words
+similar_words = model.wv.most_similar(&quot;dog&quot;, topn=3) #topn specifies top n similar words
+print(similar_words)
+
+# Save the model
+model.save(&quot;word2vec.model&quot;)
+
+# Load the model
+loaded_model = Word2Vec.load(&quot;word2vec.model&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of the number of negative samples (<code>negative</code> parameter in <code>gensim</code>) affect the performance and training time of Word2Vec? What are some guidelines for selecting an appropriate value for this parameter?</p>
+</body>
+</html>

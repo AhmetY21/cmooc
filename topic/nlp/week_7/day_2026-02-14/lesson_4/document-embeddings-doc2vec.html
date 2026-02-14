@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Embeddings (Doc2Vec)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-document-embeddings-doc2vec">Topic: Document Embeddings (Doc2Vec)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Doc2Vec, also known as Paragraph Vector, is an unsupervised learning technique to generate fixed-length vector representations of entire documents.  Unlike Word2Vec, which focuses on learning vector representations of individual words based on their context within a corpus, Doc2Vec aims to learn vector representations of documents, taking into account the context of the words <em>within</em> that document <em>and</em> the document itself.</p>
+<p>In essence, Doc2Vec extends Word2Vec to consider entire documents as another 'word' in the training process.  Two primary models exist:</p>
+<ul>
+<li>
+<p><strong>Distributed Memory Model of Paragraph Vectors (PV-DM):</strong> Similar to the Continuous Bag-of-Words (CBOW) model in Word2Vec, PV-DM predicts a target word given the surrounding context words <em>and</em> the document ID.  The document ID acts as a "memory" that remembers what is missing from the current context – it represents the topic of the paragraph.  During training, both the word vectors and the document vectors are learned.</p>
+</li>
+<li>
+<p><strong>Distributed Bag of Words version of Paragraph Vector (PV-DBOW):</strong> Similar to the Skip-gram model in Word2Vec, PV-DBOW predicts words randomly sampled from the document, given only the document ID.  It ignores the word order.</p>
+</li>
+</ul>
+<p>How can we use it? Document embeddings capture semantic meaning and can be used for:</p>
+<ul>
+<li><strong>Document Similarity:</strong>  Comparing document embeddings using cosine similarity or other distance metrics can reveal how similar two documents are in terms of content and meaning.</li>
+<li><strong>Document Classification:</strong> Document embeddings can be used as features for training machine learning classifiers.</li>
+<li><strong>Document Clustering:</strong> Grouping documents with similar embeddings together.</li>
+<li><strong>Information Retrieval:</strong> Finding documents relevant to a search query, where the query is represented as a document embedding.</li>
+<li><strong>Sentiment Analysis:</strong> As input features for sentiment classification models, particularly helpful when sentiment depends on the overall document context.</li>
+<li><strong>Recommendation Systems:</strong> Recommending documents to users based on their past interactions.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Imagine you're building a news article aggregator and want to group articles based on their topic without explicitly knowing what those topics are in advance. Using Doc2Vec, you can:</p>
+<ol>
+<li>Train a Doc2Vec model on a corpus of news articles.</li>
+<li>Generate document embeddings for each article.</li>
+<li>Use a clustering algorithm (e.g., k-means) on the document embeddings to automatically group articles into clusters representing different news topics.</li>
+</ol>
+<p>Another scenario: You are building a question answering system based on a knowledge base of documents. You can encode the question using Doc2Vec and compare the resulting vector to the vector of each document in your database.  The documents with the highest similarity scores are the best candidates to use for answering the question.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>We can use the <code>gensim</code> library in Python to implement Doc2Vec.</p>
+<pre class="codehilite"><code class="language-python">from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from nltk.tokenize import word_tokenize
+import nltk
+
+# Download necessary NLTK data
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+
+# Sample documents
+documents = [
+    &quot;This is the first document about natural language processing.&quot;,
+    &quot;The second document discusses machine learning algorithms.&quot;,
+    &quot;A third document explores deep learning techniques.&quot;,
+    &quot;Natural language processing and machine learning are related fields.&quot;
+]
+
+# Tokenize the documents and create TaggedDocument objects
+tagged_data = [TaggedDocument(words=word_tokenize(_d.lower()), tags=[str(i)]) for i, _d in enumerate(documents)]
+
+# Initialize and train the Doc2Vec model
+model = Doc2Vec(tagged_data, vector_size=20, window=2, min_count=1, workers=4, epochs=100)
+
+# Get the vector for a document
+vector_doc_0 = model.dv['0']  # Access by tag
+
+# Infer the vector for a new document
+new_doc = &quot;This is a new document about machine learning.&quot;
+vector_new_doc = model.infer_vector(word_tokenize(new_doc.lower()))
+
+# Print the vectors (optional - just to see some output)
+print(&quot;Vector for document 0:&quot;, vector_doc_0)
+print(&quot;Vector for the new document:&quot;, vector_new_doc)
+
+# Save and load the model
+model.save(&quot;doc2vec.model&quot;)
+loaded_model = Doc2Vec.load(&quot;doc2vec.model&quot;)
+
+#Perform Similarity
+from numpy import dot
+from numpy.linalg import norm
+
+def cosine_similarity(a, b):
+    return dot(a, b)/(norm(a)*norm(b))
+
+similarity = cosine_similarity(vector_doc_0, vector_new_doc)
+print(f&quot;Cosine similarity between document 0 and new document: {similarity}&quot;)
+</code></pre>
+
+<p>Key points:</p>
+<ul>
+<li><code>TaggedDocument</code> is used to associate a tag (usually the document ID) with the tokenized words of the document.</li>
+<li><code>vector_size</code> defines the dimensionality of the document vectors.</li>
+<li><code>min_count</code> ignores all words with total frequency lower than this.</li>
+<li><code>epochs</code> specifies the number of training iterations over the corpus.</li>
+<li><code>model.dv['0']</code> accesses the vector of the document tagged with '0'.</li>
+<li><code>model.infer_vector()</code> is used to generate a vector for a new, unseen document.  This method does not update the model; it leverages the existing word vectors to estimate a document vector.</li>
+</ul>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the performance of Doc2Vec compare to simpler methods of document representation like TF-IDF followed by dimensionality reduction (e.g., PCA or SVD) for document similarity tasks?  Under what conditions would one method be preferred over the other?</p>
+</body>
+</html>

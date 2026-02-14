@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FastText: Handling Out-of-Vocabulary Words</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-fasttext-handling-out-of-vocabulary-words">Topic: FastText: Handling Out-of-Vocabulary Words</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>FastText is a word embedding and text classification library developed by Facebook AI Research. It addresses the challenge of <strong>Out-of-Vocabulary (OOV)</strong> words, which are words not seen during training, by representing words as bags of character n-grams. This approach allows FastText to derive meaningful representations even for unseen words, leveraging the subword information.</p>
+<p>Here's how it works:</p>
+<ul>
+<li><strong>Character n-grams:</strong> Instead of treating a word as an atomic unit, FastText breaks it down into its constituent character n-grams. For example, the word "apple" might be represented by character n-grams like "ap", "pp", "pl", "le", "<ap", "app", "ple>", where the angle brackets denote the beginning and end of the word.</li>
+<li><strong>Embedding learning:</strong> Each n-gram is associated with a vector embedding. FastText learns these n-gram embeddings during training.</li>
+<li><strong>Word representation:</strong> The vector representation of a word is the sum of the vector embeddings of its constituent n-grams. This is done regardless of whether the word was present in the training vocabulary or not.</li>
+<li><strong>OOV Handling:</strong> When encountering an OOV word, FastText simply calculates its vector representation by summing the embeddings of its n-grams, effectively creating a representation based on its constituent parts. If the word is similar to known words (e.g., shares many common n-grams) its vector will be similar to the vectors of those known words.</li>
+<li><strong>Use:</strong> The resulting word vectors can be used for various NLP tasks, like word similarity, text classification, and information retrieval.</li>
+</ul>
+<p>Essentially, FastText avoids a complete vocabulary breakdown by utilizing subword information to create embeddings for new words dynamically, instead of assigning them a random or unknown vector.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task where the training dataset contains common words like "good," "bad," and "neutral." When deploying the model, it encounters the word "awesomeness," which wasn't in the training data (an OOV word).</p>
+<ul>
+<li><strong>Traditional Word Embeddings (e.g., Word2Vec):</strong> These models typically represent OOV words with a special <code>&lt;UNK&gt;</code> token or a random vector, meaning the model would not be able to understand the meaning of "awesomeness" based on its morphology.</li>
+<li><strong>FastText:</strong> FastText, on the other hand, would break "awesomeness" into character n-grams like "aw", "we", "es", "so", "om", "me", "en", "ness", "&lt;aw", "awe", "wes", "eso", ...". Even if the model hasn't seen "awesomeness" before, it might have seen similar n-grams in words like "awesome," "amazing," "effectiveness," and can construct a meaningful representation for "awesomeness" based on these known parts.  This allows the sentiment analysis model to better predict the sentiment associated with sentences containing this unseen word, likely classifying it as positive.</li>
+</ul>
+<p>Other scenarios include:</p>
+<ul>
+<li><strong>Languages with rich morphology:</strong> Languages like German or Finnish frequently create new words through compounding or inflection. FastText is particularly effective in such languages.</li>
+<li><strong>Spelling variations and typos:</strong> FastText is more robust to minor spelling errors or variations in word forms because it relies on subword information.</li>
+<li><strong>Rare words in specialized domains:</strong>  In fields like biomedicine, many specialized terms might be rare or completely absent from general-purpose corpora. FastText can create meaningful representations even for these rare terms.</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import fasttext
+
+# Create a text file named 'data.txt' with your training data.
+# For example:
+# This is a good example.
+# This is another good example.
+# This is a bad example.
+
+# Skipgram model
+model = fasttext.train_unsupervised('data.txt', model='skipgram')
+
+# Access word vector
+word_vector = model.get_word_vector('example') # Get vector for existing word
+print(f&quot;Vector for 'example': {word_vector[:10]}...&quot;) # Print first 10 values to conserve space
+
+# Access word vector for OOV word
+oov_word_vector = model.get_word_vector('unseenword') # Get vector for an unseen word
+print(f&quot;Vector for 'unseenword': {oov_word_vector[:10]}...&quot;) # Print first 10 values to conserve space
+
+# Save the model
+model.save_model(&quot;model_filename.bin&quot;)
+
+# Load a model previously trained.
+model = fasttext.load_model(&quot;model_filename.bin&quot;)
+
+# Get nearest neighbors
+neighbors = model.get_nearest_neighbors(&quot;example&quot;)
+print(f&quot;Nearest neighbors of 'example': {neighbors}&quot;)
+
+# Example usage for text classification (if you have labeled data)
+# Create a text file named 'data_labeled.txt' with your labeled data.
+# The file should be formatted as:
+# __label__positive This is a good example.
+# __label__negative This is a bad example.
+
+# Train a supervised (classification) model
+# model = fasttext.train_supervised(input='data_labeled.txt')
+# label = model.predict(&quot;This is a fantastic example&quot;)
+# print(f&quot;Prediction for 'This is a fantastic example': {label}&quot;)
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How does the choice of n-gram size impact the performance of FastText, and what are the trade-offs involved in selecting different n-gram lengths?</p>
+</body>
+</html>

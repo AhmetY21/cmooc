@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualizing Embeddings (t-SNE, PCA)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-visualizing-embeddings-t-sne-pca">Topic: Visualizing Embeddings (t-SNE, PCA)</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p><strong>Embedding Visualization</strong> refers to the process of projecting high-dimensional embeddings (like word embeddings or document embeddings) into lower-dimensional space (typically 2D or 3D) so they can be visually represented on a graph or plot.  This allows us to qualitatively assess the relationships captured by the embeddings.</p>
+<p><strong>How we can use it:</strong></p>
+<ul>
+<li><strong>Understanding Relationships:</strong> Visualize whether semantically similar words/concepts are located near each other in the embedding space. This can help validate the quality of the embedding model and identify potential biases.</li>
+<li><strong>Identifying Clusters:</strong>  See if words/documents with similar characteristics cluster together. This can reveal underlying topics or categories within the dataset.</li>
+<li><strong>Model Debugging:</strong> If embeddings don't align with expectations (e.g., antonyms are close together), it can indicate issues with the training data, model architecture, or hyperparameters.</li>
+<li><strong>Communication:</strong> Provides a visually intuitive way to explain complex embedding spaces to stakeholders.</li>
+</ul>
+<p><strong>t-SNE (t-distributed Stochastic Neighbor Embedding):</strong> A non-linear dimensionality reduction technique particularly well-suited for visualizing high-dimensional data. It attempts to preserve the local structure of the data, meaning that points that are close to each other in the high-dimensional space will also tend to be close to each other in the low-dimensional space.  T-SNE focuses on capturing the neighborhood relationships rather than preserving global distances. It works by:
+    1.  Constructing a probability distribution over pairs of high-dimensional data points such that the probability is proportional to the similarity of the points.
+    2.  Defining a similar probability distribution over points in the low-dimensional space.
+    3.  Minimizing the Kullback-Leibler (KL) divergence between the two probability distributions with respect to the locations of the points in the low-dimensional space.</p>
+<p><strong>PCA (Principal Component Analysis):</strong> A linear dimensionality reduction technique that identifies the principal components (directions of maximum variance) in the data. It projects the data onto these principal components, effectively reducing the dimensionality while retaining as much variance as possible. PCA is useful for identifying the most important features in the data and for visualizing the overall structure.  PCA transforms the data into a new coordinate system where the axes are orthogonal and ordered by the amount of variance they explain.  The steps are:
+    1.  Standardize the data.
+    2.  Compute the covariance matrix.
+    3.  Compute the eigenvectors and eigenvalues of the covariance matrix.
+    4.  Select the principal components based on the eigenvalues.
+    5.  Project the data onto the selected principal components.</p>
+<p>The key difference is that t-SNE is non-linear and better at preserving local structure, while PCA is linear and aims to preserve global variance. PCA is generally faster and more deterministic than t-SNE.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Let's say we've trained a word embedding model (e.g., Word2Vec, GloVe, or FastText) on a large corpus of text. We want to understand if the embedding space learned meaningful relationships between words.</p>
+<ul>
+<li>
+<p><strong>Scenario 1 (t-SNE):</strong> We want to visualize the relationships between words related to "animals". We take the embeddings of words like "dog," "cat," "lion," "tiger," "elephant," "mouse," "bird," "snake," etc.  We apply t-SNE to reduce the dimensionality of these embeddings to 2D.  If the visualization shows clusters of "domestic animals" (dog, cat, mouse), "big cats" (lion, tiger), etc., it indicates the embedding model has captured some semantic similarities.</p>
+</li>
+<li>
+<p><strong>Scenario 2 (PCA):</strong>  We want to get a general sense of the global structure of the word embeddings across a large vocabulary (e.g., several thousand words).  Using PCA to reduce the dimensionality to 2D allows us to see the overall variance explained by the first two principal components. This might reveal broad categories of words that are well-separated, providing a high-level overview.</p>
+</li>
+<li>
+<p><strong>Scenario 3 (Document Embeddings):</strong> We have document embeddings generated using Doc2Vec or a transformer model.  We can use t-SNE or PCA to visualize these embeddings and identify clusters of documents that share similar topics or themes. This could be used for topic modeling or document categorization.</p>
+</li>
+</ul>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+
+# Assume 'word_embeddings' is a dictionary where keys are words and values are their embeddings
+# For example:
+# word_embeddings = {'dog': np.array([0.1, 0.2, 0.3, ...]), 'cat': np.array([0.4, 0.5, 0.6, ...]), ...}
+
+def visualize_embeddings(embeddings, method='t-SNE', perplexity=30, n_components=2, random_state=42):
+    &quot;&quot;&quot;
+    Visualizes word embeddings using t-SNE or PCA.
+
+    Args:
+        embeddings (dict): A dictionary of word embeddings.
+        method (str): 't-SNE' or 'PCA'.
+        perplexity (int): Perplexity parameter for t-SNE.
+        n_components (int): Number of dimensions to reduce to (usually 2 or 3).
+        random_state (int): Random state for reproducibility.
+    &quot;&quot;&quot;
+    words = list(embeddings.keys())
+    embedding_matrix = np.array(list(embeddings.values()))
+
+    if method == 't-SNE':
+        tsne = TSNE(n_components=n_components, perplexity=perplexity, random_state=random_state, init='pca')
+        reduced_embeddings = tsne.fit_transform(embedding_matrix)
+    elif method == 'PCA':
+        pca = PCA(n_components=n_components)
+        reduced_embeddings = pca.fit_transform(embedding_matrix)
+    else:
+        raise ValueError(&quot;Method must be 't-SNE' or 'PCA'&quot;)
+
+    plt.figure(figsize=(12, 8))
+    plt.scatter(reduced_embeddings[:, 0], reduced_embeddings[:, 1])  # Assuming 2D visualization
+    for i, word in enumerate(words):
+        plt.annotate(word, xy=(reduced_embeddings[i, 0], reduced_embeddings[i, 1]))
+
+    plt.title(f&quot;{method} Visualization of Word Embeddings&quot;)
+    plt.xlabel(&quot;Dimension 1&quot;)
+    plt.ylabel(&quot;Dimension 2&quot;)
+    plt.show()
+
+# Example Usage (replace with your actual word embeddings)
+example_embeddings = {
+    'dog': np.array([0.1, 0.2]),
+    'cat': np.array([0.15, 0.25]),
+    'lion': np.array([0.8, 0.7]),
+    'tiger': np.array([0.75, 0.65]),
+    'apple': np.array([0.2, 0.8]),
+    'banana': np.array([0.25, 0.75]),
+}
+
+
+visualize_embeddings(example_embeddings, method='t-SNE') #Using t-SNE
+visualize_embeddings(example_embeddings, method='PCA') #Using PCA
+</code></pre>
+
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>What are the limitations of using t-SNE for visualizing embeddings, and how can we mitigate them? For example, what happens if we change the perplexity parameter significantly? How should we interpret the distances between points in a t-SNE plot?</p>
+</body>
+</html>

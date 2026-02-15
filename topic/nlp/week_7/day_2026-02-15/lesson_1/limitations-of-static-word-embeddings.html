@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Limitations of Static Word Embeddings</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-limitations-of-static-word-embeddings">Topic: Limitations of Static Word Embeddings</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>Static word embeddings are pre-trained vector representations of words where each word is assigned a single, fixed vector in the embedding space. These embeddings are typically generated using methods like Word2Vec (CBOW and Skip-gram), GloVe (Global Vectors for Word Representation), and FastText. The core idea is that words appearing in similar contexts will have closer vector representations, capturing semantic relationships.</p>
+<p><strong>How we use them:</strong></p>
+<ul>
+<li>
+<p><strong>Initialization for downstream tasks:</strong>  Static word embeddings are often used to initialize the embedding layers of neural networks for NLP tasks like text classification, sentiment analysis, machine translation, and named entity recognition.  Instead of randomly initializing the embedding layer, we start with pre-trained embeddings, which provide a strong prior knowledge about word relationships.</p>
+</li>
+<li>
+<p><strong>Feature engineering:</strong> Static word embeddings can be used as features in traditional machine learning models (e.g., logistic regression, SVM) after some aggregation (e.g., averaging the embeddings of all words in a document).</p>
+</li>
+<li>
+<p><strong>Semantic similarity analysis:</strong> We can compute the cosine similarity between the embeddings of different words to assess their semantic similarity.  This is useful for tasks like synonym detection and identifying related concepts.</p>
+</li>
+</ul>
+<p><strong>Limitations:</strong> The key limitation is that <strong>each word has only one representation regardless of its context</strong>. This means words with multiple meanings (polysemy) or words whose meaning shifts depending on context are poorly represented. For example, the word "bank" will have a single embedding, even though it can refer to a financial institution or the side of a river.  This inability to handle context-dependent meaning hinders performance in tasks requiring nuanced understanding of language. Furthermore, static embeddings are fixed after training; they cannot be updated during the training of downstream tasks, potentially limiting adaptability to specific task requirements. Finally, they often struggle with rare or out-of-vocabulary words.</p>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p>Consider a sentiment analysis task on customer reviews for a new product. Let's say some reviews mention the word "apple."</p>
+<ul>
+<li>
+<p><strong>Scenario 1:</strong> "The apple product is sleek and innovative." Here, "apple" refers to the company Apple and its products.</p>
+</li>
+<li>
+<p><strong>Scenario 2:</strong> "The apple I received was bruised and rotten." Here, "apple" refers to the fruit.</p>
+</li>
+</ul>
+<p>A static word embedding model will assign the <em>same</em> vector to "apple" in both sentences. This means the sentiment analyzer won't be able to distinguish between positive sentiment toward Apple products in the first sentence and negative sentiment toward a defective fruit in the second sentence. The single vector represents an average of <em>all</em> uses of "apple" seen during its training, leading to potentially incorrect sentiment classification. The model would struggle to correctly infer the user’s intended meaning in each case because it cannot leverage context.</p>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<pre class="codehilite"><code class="language-python">import gensim.downloader as api
+import numpy as np
+
+# Load pre-trained Word2Vec model
+wv = api.load('word2vec-google-news-300') #Download a common pre-trained model
+
+# Example sentences
+sentence1 = &quot;The bank near the river is very calm.&quot;
+sentence2 = &quot;I need to deposit money at the bank.&quot;
+
+# Get embeddings
+embedding_bank_river = wv['bank']
+embedding_bank_money = wv['bank'] #Same vector despite different contexts
+
+# Calculate cosine similarity
+similarity = np.dot(embedding_bank_river, embedding_bank_money) / (np.linalg.norm(embedding_bank_river) * np.linalg.norm(embedding_bank_money))
+
+print(f&quot;Cosine similarity between 'bank' in both sentences: {similarity}&quot;) #Output will be close to 1, indicating high similarity despite the difference in meaning.
+</code></pre>
+
+<p>This code demonstrates how static word embeddings assign the same vector to the word "bank" regardless of its context.  The cosine similarity, being near 1, shows the model doesn't differentiate the different meanings, highlighting the limitation of static embeddings in handling polysemy. Using contextual embeddings like those from BERT, RoBERTa, or other transformer-based models would provide significantly different embeddings for "bank" in each of these sentences.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>Given the limitations of static word embeddings, what are some alternative approaches that address the issue of context dependency and polysemy in word representations? Explain how these approaches improve upon static embeddings.</p>
+</body>
+</html>

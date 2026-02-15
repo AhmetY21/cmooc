@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to Neural Networks for NLP</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1, h2, h3 { color: #111827; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    pre { background-color: #0b1020; color: #e5e7eb; padding: 16px; border-radius: 10px; overflow-x: auto; }
+    pre code { background: transparent; padding: 0; }
+    blockquote { border-left: 4px solid #e5e7eb; margin: 0; padding-left: 16px; color: #4b5563; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background: #f9fafb; }
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+<h1 id="topic-introduction-to-neural-networks-for-nlp">Topic: Introduction to Neural Networks for NLP</h1>
+<h2 id="1-formal-definition-what-is-it-and-how-can-we-use-it">1) Formal definition (what is it, and how can we use it?)</h2>
+<p>In the context of Natural Language Processing (NLP), neural networks are computational models inspired by the structure and function of biological neural networks. They are composed of interconnected nodes (neurons) organized in layers, each layer transforming the input to provide a progressively higher-level representation of the data.</p>
+<p>More formally, a neural network can be defined as a function approximator. Given an input <em>x</em>, the network's goal is to learn a function <em>f(x)</em> that maps <em>x</em> to a desired output <em>y</em>. This is achieved through learning the weights and biases of the connections between neurons.</p>
+<p>Here's a breakdown of key components:</p>
+<ul>
+<li><strong>Neurons (Nodes):</strong> The basic unit of a neural network. It receives inputs, applies a weight to each input, sums them up, adds a bias, and then applies an activation function.</li>
+<li><strong>Weights:</strong> Parameters that determine the strength of the connection between neurons. These are adjusted during the learning process.</li>
+<li><strong>Biases:</strong> An additional parameter added to the weighted sum of inputs. It allows the neuron to activate even when all inputs are zero.</li>
+<li><strong>Activation Function:</strong> A non-linear function applied to the weighted sum of inputs plus the bias. This introduces non-linearity, enabling the network to learn complex patterns. Common examples include ReLU, sigmoid, and tanh.</li>
+<li><strong>Layers:</strong><ul>
+<li><strong>Input Layer:</strong> Receives the initial input data (e.g., word embeddings).</li>
+<li><strong>Hidden Layers:</strong> Perform intermediate computations. A neural network can have multiple hidden layers.</li>
+<li><strong>Output Layer:</strong> Produces the final output (e.g., predicted class label).</li>
+</ul>
+</li>
+</ul>
+<p><strong>How can we use it in NLP?</strong></p>
+<p>Neural networks are used extensively in NLP for various tasks, including:</p>
+<ul>
+<li><strong>Text Classification:</strong> Sentiment analysis, spam detection, topic categorization. The input is a text document, and the output is a class label.</li>
+<li><strong>Machine Translation:</strong> Translating text from one language to another.  Sequence-to-sequence models are often used.</li>
+<li><strong>Named Entity Recognition (NER):</strong> Identifying and classifying named entities in text (e.g., person, organization, location).</li>
+<li><strong>Language Modeling:</strong> Predicting the next word in a sequence.</li>
+<li><strong>Question Answering:</strong> Answering questions based on a given text.</li>
+<li><strong>Text Summarization:</strong> Generating a shorter version of a text document.</li>
+<li><strong>Part-of-Speech (POS) Tagging:</strong> Assigning grammatical tags to words in a sentence.</li>
+</ul>
+<h2 id="2-application-scenario">2) Application scenario</h2>
+<p><strong>Scenario:</strong> Sentiment Analysis of Customer Reviews</p>
+<p>A company wants to automatically analyze customer reviews of their products to understand overall customer sentiment. Manually reading and categorizing thousands of reviews is time-consuming and expensive.</p>
+<p><strong>Using Neural Networks:</strong></p>
+<ol>
+<li><strong>Data Preparation:</strong> The customer reviews are collected and preprocessed. This includes cleaning the text (removing punctuation, converting to lowercase), tokenization (splitting the text into words or subwords), and creating numerical representations (e.g., word embeddings).</li>
+<li><strong>Model Building:</strong> A neural network model, such as a Convolutional Neural Network (CNN) or a Recurrent Neural Network (RNN), is built to classify the reviews. CNNs are good at capturing local patterns in text, while RNNs are good at processing sequential data. A common architecture is to use an embedding layer to convert words to vectors, followed by CNN or RNN layers, and finally a dense (fully connected) layer to produce a sentiment score (e.g., positive, negative, neutral).</li>
+<li><strong>Training:</strong> The model is trained on a labeled dataset of reviews (reviews that have been manually labeled with their sentiment).  The model learns to associate specific words and phrases with positive or negative sentiment.</li>
+<li><strong>Evaluation:</strong> The trained model is evaluated on a held-out dataset to assess its performance. Metrics like accuracy, precision, recall, and F1-score are used.</li>
+<li><strong>Deployment:</strong> The trained model is deployed to automatically analyze new customer reviews in real-time. The company can then use this information to identify areas for improvement in their products and services.</li>
+</ol>
+<h2 id="3-python-method-if-possible">3) Python method (if possible)</h2>
+<p>Here's a basic example of a simple feedforward neural network for text classification using TensorFlow and Keras:</p>
+<pre class="codehilite"><code class="language-python">import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Flatten, Dense
+
+# Sample data (replace with your actual dataset)
+sentences = [
+    &quot;This is a great movie&quot;,
+    &quot;I did not like the movie&quot;,
+    &quot;The movie was okay&quot;,
+    &quot;I really enjoyed the show&quot;,
+    &quot;The show was terrible&quot;
+]
+labels = [1, 0, 0, 1, 0]  # 1: positive, 0: negative
+
+# Tokenization and Vocabulary creation
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=100) # only keep the 100 most frequent words
+tokenizer.fit_on_texts(sentences)
+word_index = tokenizer.word_index
+sequences = tokenizer.texts_to_sequences(sentences)
+
+# Padding sequences to have the same length
+padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, maxlen=10)
+
+# Model Definition
+model = Sequential([
+    Embedding(len(word_index) + 1, 8, input_length=10),  # Embedding layer: vocabulary size, embedding dimension, input length
+    Flatten(),
+    Dense(16, activation='relu'),
+    Dense(1, activation='sigmoid')  # Output layer: sigmoid for binary classification
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(padded_sequences, labels, epochs=10)
+
+# Example prediction
+new_sentence = [&quot;I loved the movie&quot;]
+new_sequence = tokenizer.texts_to_sequences(new_sentence)
+padded_new_sequence = tf.keras.preprocessing.sequence.pad_sequences(new_sequence, maxlen=10)
+prediction = model.predict(padded_new_sequence)
+print(f&quot;Prediction: {prediction}&quot;)
+</code></pre>
+
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>Tokenization:</strong> Converts text into sequences of integers, where each integer represents a word in the vocabulary.</li>
+<li><strong>Padding:</strong> Makes all sequences the same length by adding padding tokens.</li>
+<li><strong>Embedding Layer:</strong> Converts integer word indices into dense vectors of fixed size. This layer learns word representations during training.</li>
+<li><strong>Flatten Layer:</strong> Flattens the 2D output of the embedding layer into a 1D vector.</li>
+<li><strong>Dense Layers:</strong> Fully connected layers that learn complex relationships between the input features.</li>
+<li><strong>Activation Functions:</strong> ReLU (Rectified Linear Unit) is used in the hidden layer, and sigmoid is used in the output layer for binary classification.</li>
+<li><strong>Compilation:</strong> Configures the model for training, specifying the optimizer (adam), loss function (binary cross-entropy), and metrics (accuracy).</li>
+<li><strong>Training:</strong> The model learns to map input sequences to the corresponding labels by adjusting its weights and biases.</li>
+</ul>
+<p><strong>Important Note:</strong> This is a very basic example for demonstration purposes. Real-world NLP tasks often require more complex models and more sophisticated preprocessing techniques.</p>
+<h2 id="4-follow-up-question">4) Follow-up question</h2>
+<p>How do Recurrent Neural Networks (RNNs), specifically LSTMs and GRUs, improve upon traditional feedforward neural networks for NLP tasks involving sequential data, and what are the trade-offs involved in choosing between them?</p>
+</body>
+</html>
